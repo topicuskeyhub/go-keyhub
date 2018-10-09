@@ -4,13 +4,14 @@
 Gopkg.toml:
 ```toml
 [[constraint]]
-name = "github.com/topicusonderwijs/keyhub-sdk"
+  name = "github.com/topicuskeyhub/go-keyhub"
+  version = "v0.1.0"
 ```
 
 ```go
-import "github.com/topicusonderwijs/keyhub-sdk/go-keyhub"
+import "github.com/topicuskeyhub/go-keyhub"
 ```
 
 ### How to develop
-* Dependencies: `dep ensure`
+* Dependencies: `dep ensure` or `dep ensure -update`
 * Code formatting: `gofmt -s -w .`

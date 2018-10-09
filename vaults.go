@@ -21,8 +21,6 @@ import (
 	"net/url"
 
 	"github.com/dghubble/sling"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type vaultRecords struct {
