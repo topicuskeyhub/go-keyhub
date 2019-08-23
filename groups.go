@@ -27,7 +27,7 @@ type groupList struct {
 
 type Group struct {
 	UUID  string `json:"uuid"`
-	Name  string `json:"name:`
+	Name  string `json:"name"`
 	Links []struct {
 		ID   int    `json:"id"`
 		Rel  string `json:"rel"`
