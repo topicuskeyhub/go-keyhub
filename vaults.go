@@ -19,6 +19,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/dghubble/sling"
 )
@@ -39,12 +40,34 @@ type VaultRecord struct {
 		Href string `json:"href"`
 	} `json:"links"`
 	AdditionalObjects struct {
+		Audit struct {
+			CreatedAt      time.Time `json:"createdAt"`
+			CreatedBy      string    `json:"createdBy"`
+			LastModifiedAt time.Time `json:"lastModifiedAt"`
+			LastModifiedBy string    `json:"lastModifiedBy"`
+		} `json:"audit"`
 		Secret struct {
 			Password string `json:"password"`
 			File     []byte `json:"file"`
 			Comment  string `json:"comment"`
 		} `json:"secret"`
 	} `json:"additionalObjects"`
+}
+
+func (r *VaultRecord) CreatedAt() time.Time {
+	return r.AdditionalObjects.Audit.CreatedAt
+}
+
+func (r *VaultRecord) CreatedBy() string {
+	return r.AdditionalObjects.Audit.CreatedBy
+}
+
+func (r *VaultRecord) LastModifiedAt() time.Time {
+	return r.AdditionalObjects.Audit.LastModifiedAt
+}
+
+func (r *VaultRecord) LastModifiedBy() string {
+	return r.AdditionalObjects.Audit.LastModifiedBy
 }
 
 func (r *VaultRecord) Comment() string {
@@ -71,7 +94,7 @@ func newVaultService(sling *sling.Sling, client *http.Client) *VaultService {
 	}
 }
 
-// Retrieve all vault records for a group (secrets are not included)
+// GetRecords Retrieve all vault records for a group (secrets are not included)
 func (s *VaultService) GetRecords(g *Group) (records []VaultRecord, err error) {
 	url, _ := url.Parse(g.Links[0].Href)
 	vaultRecords := new(vaultRecords)
@@ -86,15 +109,28 @@ func (s *VaultService) GetRecords(g *Group) (records []VaultRecord, err error) {
 	return
 }
 
-type VaultParams struct {
-	Additional string `url:"additional,omitempty"`
+type vaultParams struct {
+	Additional []string `url:"additional,omitempty"`
 }
 
-// Retrieve a vault record by uuid for a certain group, including secrets
-func (s *VaultService) GetRecord(group *Group, uuid string) (record *VaultRecord, err error) {
+type RecordOptions struct {
+	Audit  bool
+	Secret bool
+}
+
+// GetRecord Retrieve a vault record by uuid for a certain group, including audit and secrets
+func (s *VaultService) GetRecord(group *Group, uuid string, options RecordOptions) (record *VaultRecord, err error) {
 	url, _ := url.Parse(group.Links[0].Href)
 	record = new(VaultRecord)
-	params := &VaultParams{Additional: "secret"}
+	additional := []string{}
+	if options.Audit {
+		additional = append(additional, "audit")
+	}
+	if options.Secret {
+		additional = append(additional, "secret")
+	}
+
+	params := &vaultParams{Additional: additional}
 	_, err = s.sling.New().Path(url.Path + "/").Path("vault/record/uuid/").QueryStruct(params).Get(uuid).ReceiveSuccess(record)
 	return
 }

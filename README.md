@@ -5,17 +5,18 @@
 # go-keyhub - Topicus KeyHub API Client
 
 ### How to use
-Gopkg.toml:
-```toml
-[[constraint]]
-  name = "github.com/topicuskeyhub/go-keyhub"
-  version = "v0.1.0"
+go.mod:
 ```
+require (
+  github.com/topicuskeyhub/go-keyhub v0.2.0
+)
+```
+
 
 ```go
 import "github.com/topicuskeyhub/go-keyhub"
 ```
 
 ### How to develop
-* Dependencies: `dep ensure` or `dep ensure -update`
+* Dependencies: `go mod download`
 * Code formatting: `gofmt -s -w .`
