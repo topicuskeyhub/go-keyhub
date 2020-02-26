@@ -17,7 +17,6 @@ package keyhub
 
 import (
 	"errors"
-	"net/http"
 	"net/url"
 	"time"
 
@@ -83,14 +82,12 @@ func (r *VaultRecord) File() []byte {
 }
 
 type VaultService struct {
-	sling  *sling.Sling
-	client *http.Client
+	sling *sling.Sling
 }
 
-func newVaultService(sling *sling.Sling, client *http.Client) *VaultService {
+func newVaultService(sling *sling.Sling) *VaultService {
 	return &VaultService{
-		sling:  sling,
-		client: client,
+		sling: sling,
 	}
 }
 
