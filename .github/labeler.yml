@@ -6,12 +6,9 @@ enhancement:
 
 patch:
   title: "^(fix|refactor|perf):.*"
-  mergeable: true
 
 minor:
   title: "^feat:.*"
-  mergeable: true
 
 major:
   title: "^(fix|feat|refactor|perf)!:.*"
-  mergeable: true
