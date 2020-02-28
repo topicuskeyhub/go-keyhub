@@ -1,5 +1,9 @@
 name: Build
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - '.github/**'
+
 jobs:
   lint:
     name: Lint
