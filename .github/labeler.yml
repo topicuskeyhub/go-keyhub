@@ -1,3 +1,9 @@
+bug:
+  title: "^fix.*"
+
+enhancement:
+  title: "^feat.*"
+
 patch:
   title: "^(fix|refactor|perf):.*"
   mergeable: true
