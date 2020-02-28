@@ -1,4 +1,4 @@
-name: Go
+name: Build
 on: [push]
 jobs:
   lint:
@@ -35,6 +35,6 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
+    - name: Compile
       run: go build -v .
 
