@@ -64,8 +64,6 @@ func (r *VaultRecord) CreatedBy() string {
 }
 
 func (r *VaultRecord) LastModifiedAt() time.Time {
-	//t, _ := time.Parse(time.RFC3339Nano, r.AdditionalObjects.Audit.LastModifiedAt)
-	//t = t.Truncate(time.Second)
 	return r.AdditionalObjects.Audit.LastModifiedAt
 }
 
@@ -140,7 +138,6 @@ func (s *VaultService) GetRecord(group *Group, uuid string, options RecordOption
 	params := &vaultParams{UUID: uuid, Additional: additional}
 	sl := s.sling.New().Set("Range", "items=0-0").Path(url.Path + "/").Path("vault/record").QueryStruct(params)
 
-	// sl.ResponseDecoder(s)
 	vi := &vaultItems{}
 	_, err = sl.ReceiveSuccess(vi)
 	if err != nil {
@@ -151,8 +148,6 @@ func (s *VaultService) GetRecord(group *Group, uuid string, options RecordOption
 		record = &vi.Items[0]
 	}
 
-	// o, _ := json.Marshal(vi)
-	// fmt.Println("request uri", string(o))
 	return
 }
 
