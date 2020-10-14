@@ -16,6 +16,8 @@
 package keyhub
 
 import (
+	"strings"
+
 	"github.com/dghubble/sling"
 )
 
@@ -37,6 +39,8 @@ func newVersionService(sling *sling.Sling) *VersionService {
 func (s *VersionService) Get() (v *Version, err error) {
 	v = new(Version)
 	_, err = s.sling.New().Get("").ReceiveSuccess(v)
-	v.KeyhubVersion = v.KeyhubVersion[len("keyhub-"):]
+	if err == nil {
+		v.KeyhubVersion = strings.TrimPrefix(v.KeyhubVersion, "keyhub-")
+	}
 	return
 }
