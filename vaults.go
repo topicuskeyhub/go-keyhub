@@ -24,10 +24,6 @@ import (
 	"github.com/dghubble/sling"
 )
 
-type vaultRecords struct {
-	Items []VaultRecord `json:"records"`
-}
-
 type vaultItems struct {
 	Items []VaultRecord `json:"items"`
 }
