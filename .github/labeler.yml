@@ -1,0 +1,14 @@
+bug:
+  title: "^fix.*"
+
+enhancement:
+  title: "^feat.*"
+
+patch:
+  title: "^(fix|refactor|perf):.*"
+
+minor:
+  title: "^feat:.*"
+
+major:
+  title: "^(fix|feat|refactor|perf)!:.*"
