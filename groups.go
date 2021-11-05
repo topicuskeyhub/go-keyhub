@@ -17,50 +17,74 @@ package keyhub
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/dghubble/sling"
+	"github.com/topicuskeyhub/go-keyhub/model"
 )
-
-type groupList struct {
-	Items []Group `json:"items"`
-}
-
-type Group struct {
-	UUID  string `json:"uuid"`
-	Name  string `json:"name"`
-	Links []struct {
-		ID   int    `json:"id"`
-		Rel  string `json:"rel"`
-		Type string `json:"type"`
-		Href string `json:"href"`
-	} `json:"links"`
-}
 
 type GroupService struct {
 	sling *sling.Sling
 }
 
-type GroupParams struct {
-	UUID string `url:"uuid,omitempty"`
-}
-
 func newGroupService(sling *sling.Sling) *GroupService {
 	return &GroupService{
-		sling: sling.Path("/keyhub/rest/v1/group"),
+		sling: sling.Path("/keyhub/rest/v1/group/"),
 	}
 }
 
-func (s *GroupService) List() (groups []Group, err error) {
-	gl := new(groupList)
-	_, err = s.sling.New().Get("").ReceiveSuccess(gl)
-	groups = gl.Items
+func (s *GroupService) Create(group *model.Group) (result *model.Group, err error) {
+	groups := new(model.GroupList)
+	results := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+	groups.Items = append(groups.Items, *group)
+
+	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not create Group. Error: " + errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) > 0 {
+			result = &results.Items[0]
+		} else {
+			err = errors.New("Created Group not found!")
+		}
+	}
+
 	return
 }
 
-func (s *GroupService) Get(uuid string) (g *Group, err error) {
-	gl := new(groupList)
-	params := &GroupParams{UUID: uuid}
-	_, err = s.sling.New().Get("").QueryStruct(params).ReceiveSuccess(gl)
+func (s *GroupService) List() (groups []model.Group, err error) {
+	results := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+
+	_, err = s.sling.New().Get("").Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not get Groups. Error: " + errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) > 0 {
+			groups = results.Items
+		} else {
+			groups = []model.Group{}
+		}
+	}
+
+	return
+}
+
+func (s *GroupService) Get(uuid string) (g *model.Group, err error) {
+	gl := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+
+	additional := []string{}
+	additional = append(additional, "admins")
+	params := &model.GroupQueryParams{UUID: uuid, Additional: additional}
+
+	_, err = s.sling.New().Get("").QueryStruct(params).Receive(gl, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not get Group '" + uuid + "'. Error: " + errorReport.Message)
+	}
 	if err == nil {
 		if len(gl.Items) > 0 {
 			g = &gl.Items[0]
@@ -68,5 +92,18 @@ func (s *GroupService) Get(uuid string) (g *Group, err error) {
 			err = errors.New("Group '" + uuid + "' not found!")
 		}
 	}
+
+	return
+}
+
+func (s *GroupService) Delete(ID int) (err error) {
+	errorReport := new(model.ErrorReport)
+	idString := strconv.Itoa(ID)
+
+	_, err = s.sling.New().Delete(idString).Receive(nil, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not delete Group '" + idString + "'. Error: " + errorReport.Message)
+	}
+
 	return
 }

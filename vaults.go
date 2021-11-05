@@ -16,74 +16,14 @@
 package keyhub
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/dghubble/sling"
+	"github.com/topicuskeyhub/go-keyhub/model"
 )
-
-type vaultItems struct {
-	Items []VaultRecord `json:"items"`
-}
-
-type VaultRecord struct {
-	UUID     string   `json:"uuid"`
-	Name     string   `json:"name"`
-	URL      string   `json:"url"`
-	Username string   `json:"username"`
-	Color    string   `json:"color"`
-	Filename string   `json:"filename"`
-	Types    []string `json:"types"`
-	Links    []struct {
-		ID   int    `json:"id"`
-		Href string `json:"href"`
-	} `json:"links"`
-	AdditionalObjects struct {
-		Audit struct {
-			CreatedAt      time.Time `json:"createdAt"`
-			CreatedBy      string    `json:"createdBy"`
-			LastModifiedAt time.Time `json:"lastModifiedAt"`
-			LastModifiedBy string    `json:"lastModifiedBy"`
-		} `json:"audit"`
-		Secret struct {
-			Password string `json:"password"`
-			File     []byte `json:"file"`
-			Comment  string `json:"comment"`
-		} `json:"secret"`
-	} `json:"additionalObjects"`
-}
-
-func (r *VaultRecord) CreatedAt() time.Time {
-	return r.AdditionalObjects.Audit.CreatedAt
-}
-
-func (r *VaultRecord) CreatedBy() string {
-	return r.AdditionalObjects.Audit.CreatedBy
-}
-
-func (r *VaultRecord) LastModifiedAt() time.Time {
-	//t, _ := time.Parse(time.RFC3339Nano, r.AdditionalObjects.Audit.LastModifiedAt)
-	//t = t.Truncate(time.Second)
-	return r.AdditionalObjects.Audit.LastModifiedAt
-}
-
-func (r *VaultRecord) LastModifiedBy() string {
-	return r.AdditionalObjects.Audit.LastModifiedBy
-}
-
-func (r *VaultRecord) Comment() string {
-	return r.AdditionalObjects.Secret.Comment
-}
-
-func (r *VaultRecord) Password() string {
-	return r.AdditionalObjects.Secret.Password
-}
-
-func (r *VaultRecord) File() []byte {
-	return r.AdditionalObjects.Secret.File
-}
 
 type VaultService struct {
 	sling *sling.Sling
@@ -96,39 +36,41 @@ func newVaultService(sling *sling.Sling) *VaultService {
 }
 
 // GetRecords Retrieve all vault records for a group (secrets are not included)
-func (s *VaultService) GetRecords(g *Group) ([]VaultRecord, error) {
-	url, _ := url.Parse(g.Links[0].Href)
+func (s *VaultService) GetRecords(g *model.Group) (result []model.VaultRecord, err error) {
+	result, err = s.List(g)
+	return
+}
 
+// GetRecords Retrieve all vault records for a group (secrets are not included)
+func (s *VaultService) List(g *model.Group) (records []model.VaultRecord, err error) {
+	results := new(model.VaultRecordList)
+	errorReport := new(model.ErrorReport)
+
+	url, _ := url.Parse(g.Links[0].Href)
 	additional := []string{}
 	additional = append(additional, "audit")
-	params := &vaultParams{Additional: additional}
-	vaultRecords := &vaultItems{}
-	resp, err := s.sling.New().Path(url.Path + "/").Path("vault/").Get("record").QueryStruct(params).ReceiveSuccess(vaultRecords)
-	if err != nil {
-		return nil, err
+	params := &model.VaultRecordQueryParams{Additional: additional}
+
+	_, err = s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(params).Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not get Vault of Group '" + g.UUID + "'. Error: " + errorReport.Message)
 	}
-	if code := resp.StatusCode; code < 200 || code > 299 {
-		return nil, fmt.Errorf("Vault query returned with statuscode %d", code)
+	if err == nil {
+		if len(results.Items) > 0 {
+			records = results.Items
+		} else {
+			records = []model.VaultRecord{}
+		}
 	}
 
-	return vaultRecords.Items, nil
-}
-
-type vaultParams struct {
-	UUID       string   `url:"uuid,omitempty"`
-	Additional []string `url:"additional,omitempty"`
-	Any        bool     `url:"any,omitempty"`
-}
-
-type RecordOptions struct {
-	Audit  bool
-	Secret bool
+	return
 }
 
 // GetRecord Retrieve a vault record by uuid for a certain group, including audit and secrets
-func (s *VaultService) GetRecord(group *Group, uuid string, options RecordOptions) (record *VaultRecord, err error) {
+func (s *VaultService) GetRecord(group *model.Group, uuid string, options model.RecordOptions) (record *model.VaultRecord, err error) {
 	url, _ := url.Parse(group.Links[0].Href)
-	record = new(VaultRecord)
+	record = new(model.VaultRecord)
+
 	additional := []string{}
 	if options.Audit {
 		additional = append(additional, "audit")
@@ -137,10 +79,10 @@ func (s *VaultService) GetRecord(group *Group, uuid string, options RecordOption
 		additional = append(additional, "secret")
 	}
 
-	params := &vaultParams{UUID: uuid, Additional: additional}
+	params := &model.VaultRecordQueryParams{UUID: uuid, Additional: additional}
 	sl := s.sling.New().Set("Range", "items=0-0").Path(url.Path + "/").Path("vault/record").QueryStruct(params)
 
-	vi := &vaultItems{}
+	vi := &model.VaultRecordList{}
 	_, err = sl.ReceiveSuccess(vi)
 	if err != nil {
 		return
