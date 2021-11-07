@@ -20,8 +20,7 @@ type AccountList struct {
 }
 
 type Account struct {
-	DType             string                 `json:"$type"`
-	Links             []Link                 `json:"links,omitempty"`
+	Linkable
 	AdditionalObjects map[string]interface{} `json:"additionalObjects,omitempty"`
 
 	UUID        string `json:"uuid,omitempty"`
@@ -30,7 +29,7 @@ type Account struct {
 }
 
 func NewAccount(username string) *Account {
-	return &Account{DType: "auth.Account", Username: username}
+	return &Account{Linkable: Linkable{DType: "auth.Account"}, Username: username}
 }
 
 type AccountQueryParams struct {

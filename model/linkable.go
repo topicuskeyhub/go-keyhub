@@ -15,6 +15,25 @@
 
 package model
 
+type Linkable struct {
+	DType string `json:"$type"`
+	Links []Link `json:"links,omitempty"`
+}
+
+func (l *Linkable) Self() *Link {
+	if l.Links == nil {
+		return nil
+	}
+
+	for _, a := range l.Links {
+		if a.Rel == "self" {
+			return &a
+		}
+	}
+
+	return nil
+}
+
 type ErrorReport struct {
 	Code             int      `json:"code"`
 	Reason           string   `json:"reason"`

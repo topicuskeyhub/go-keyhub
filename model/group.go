@@ -20,9 +20,7 @@ type GroupList struct {
 }
 
 type Group struct {
-	DType string `json:"$type"`
-	Links []Link `json:"links,omitempty"`
-	// AdditionalObjects map[string]interface{} `json:"additionalObjects,omitempty"`
+	Linkable
 	AdditionalObjects *GroupAdditionalObjects `json:"additionalObjects,omitempty"`
 
 	UUID           string `json:"uuid,omitempty"`
@@ -40,8 +38,8 @@ func NewGroup(name string, groupadmin *Account) (result *Group) {
 	gal.Items = append(gal.Items, *gra)
 	gao := GroupAdditionalObjects{Admins: gal}
 
-	result = &Group{DType: "group.Group", Name: name, ExtendedAccess: "NOT_ALLOWED", AdditionalObjects: &gao}
-	// result = &Group{DType: "group.Group", Name: name, ExtendedAccess: "NOT_ALLOWED"}
+	result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED", AdditionalObjects: &gao}
+	// result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}
 	return
 }
 
@@ -53,8 +51,7 @@ type GroupAccountList struct {
 }
 
 type GroupAccount struct {
-	DType             string                 `json:"$type"`
-	Links             []Link                 `json:"links,omitempty"`
+	Linkable
 	AdditionalObjects map[string]interface{} `json:"additionalObjects,omitempty"`
 
 	UUID        string `json:"uuid,omitempty"`
@@ -64,7 +61,7 @@ type GroupAccount struct {
 }
 
 func NewGroupAccount(account *Account, rights string) *GroupAccount {
-	ga := &GroupAccount{DType: "group.GroupAccount", Rights: rights}
+	ga := &GroupAccount{Linkable: Linkable{DType: "group.GroupAccount"}, Rights: rights}
 	ga.Links = append(ga.Links, Link{ID: account.Links[0].ID, Rel: "self"})
 
 	return ga

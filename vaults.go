@@ -46,7 +46,7 @@ func (s *VaultService) List(g *model.Group) (records []model.VaultRecord, err er
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 
-	url, _ := url.Parse(g.Links[0].Href)
+	url, _ := url.Parse(g.Self().Href)
 	additional := []string{}
 	additional = append(additional, "audit")
 	params := &model.VaultRecordQueryParams{Additional: additional}
@@ -68,7 +68,7 @@ func (s *VaultService) List(g *model.Group) (records []model.VaultRecord, err er
 
 // GetRecord Retrieve a vault record by uuid for a certain group, including audit and secrets
 func (s *VaultService) GetRecord(group *model.Group, uuid string, options model.RecordOptions) (record *model.VaultRecord, err error) {
-	url, _ := url.Parse(group.Links[0].Href)
+	url, _ := url.Parse(group.Self().Href)
 	record = new(model.VaultRecord)
 
 	additional := []string{}

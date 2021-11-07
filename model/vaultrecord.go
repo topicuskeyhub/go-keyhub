@@ -22,16 +22,16 @@ type VaultRecordList struct {
 }
 
 type VaultRecord struct {
-	DType             string                       `json:"$type"`
-	Links             []Link                       `json:"links,omitempty"`
-	UUID              string                       `json:"uuid,omitempty"`
-	Name              string                       `json:"name"`
-	URL               string                       `json:"url,omitempty"`
-	Username          string                       `json:"username,omitempty"`
-	Color             string                       `json:"color,omitempty"`
-	Filename          string                       `json:"filename,omitempty"`
-	Types             []string                     `json:"types,omitempty"`
+	Linkable
 	AdditionalObjects VaultRecordAdditionalObjects `json:"additionalObjects,omitempty"`
+
+	UUID     string   `json:"uuid,omitempty"`
+	Name     string   `json:"name"`
+	URL      string   `json:"url,omitempty"`
+	Username string   `json:"username,omitempty"`
+	Color    string   `json:"color,omitempty"`
+	Filename string   `json:"filename,omitempty"`
+	Types    []string `json:"types,omitempty"`
 }
 
 type VaultRecordAdditionalObjects struct {
