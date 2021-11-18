@@ -5,6 +5,9 @@
 # go-keyhub - Topicus KeyHub API Client
 
 ### How to use
+
+See the examples directory for more complete examples.
+
 go.mod:
 ```
 require (
@@ -12,10 +15,8 @@ require (
 )
 ```
 
-
 ```go
 import "github.com/topicuskeyhub/go-keyhub"
-
 
 client, err := keyhub.NewClient(http.DefaultClient, issuer, clientid, clientsecret)
 if err != nil {

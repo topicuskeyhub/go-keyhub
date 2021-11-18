@@ -5,7 +5,7 @@ on:
       - '.github/**'
 
 jobs:
-  lint:
+  build:
     name: Lint
     runs-on: ubuntu-latest
     steps:
