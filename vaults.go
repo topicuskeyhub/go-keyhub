@@ -51,9 +51,6 @@ func (s *VaultService) List(g *model.Group, options model.RecordOptions) (record
 	if options.Audit {
 		additional = append(additional, "audit")
 	}
-	if options.Secret {
-		additional = append(additional, "secret")
-	}
 	params := &model.VaultRecordQueryParams{Additional: additional}
 	_, err = s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(params).Receive(results, errorReport)
 
