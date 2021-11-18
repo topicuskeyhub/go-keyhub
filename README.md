@@ -13,9 +13,15 @@ require (
 ```
 
 
-
 ```go
 import "github.com/topicuskeyhub/go-keyhub"
+
+
+client, err := keyhub.NewClient(http.DefaultClient, issuer, clientid, clientsecret)
+if err != nil {
+    log.Fatalln("ERROR", err)
+}
+
 ```
 
 ### How to develop
