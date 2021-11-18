@@ -37,21 +37,26 @@ func newVaultService(sling *sling.Sling) *VaultService {
 
 // GetRecords Retrieve all vault records for a group (secrets are not included)
 func (s *VaultService) GetRecords(g *model.Group) (result []model.VaultRecord, err error) {
-	result, err = s.List(g)
+	result, err = s.List(g, model.RecordOptions{})
 	return
 }
 
 // GetRecords Retrieve all vault records for a group (secrets are not included)
-func (s *VaultService) List(g *model.Group) (records []model.VaultRecord, err error) {
+func (s *VaultService) List(g *model.Group, options model.RecordOptions) (records []model.VaultRecord, err error) {
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 
 	url, _ := url.Parse(g.Self().Href)
 	additional := []string{}
-	additional = append(additional, "audit")
+	if options.Audit {
+		additional = append(additional, "audit")
+	}
+	if options.Secret {
+		additional = append(additional, "secret")
+	}
 	params := &model.VaultRecordQueryParams{Additional: additional}
-
 	_, err = s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(params).Receive(results, errorReport)
+
 	if errorReport.Code > 0 {
 		err = errors.New("Could not get Vault of Group '" + g.UUID + "'. Error: " + errorReport.Message)
 	}
@@ -78,7 +83,6 @@ func (s *VaultService) GetRecord(group *model.Group, uuid string, options model.
 	if options.Secret {
 		additional = append(additional, "secret")
 	}
-
 	params := &model.VaultRecordQueryParams{UUID: uuid, Additional: additional}
 	sl := s.sling.New().Set("Range", "items=0-0").Path(url.Path + "/").Path("vault/record").QueryStruct(params)
 

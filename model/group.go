@@ -29,14 +29,14 @@ type Group struct {
 }
 
 type GroupAdditionalObjects struct {
-	Admins GroupAccountList `json:"admins,omitempty"`
+	Admins *GroupAccountList `json:"admins,omitempty"`
 }
 
 func NewGroup(name string, groupadmin *Account) (result *Group) {
 	gal := GroupAccountList{DType: "LinkableWrapper"}
 	gra := NewGroupAccount(groupadmin, "MANAGER")
 	gal.Items = append(gal.Items, *gra)
-	gao := GroupAdditionalObjects{Admins: gal}
+	gao := GroupAdditionalObjects{Admins: &gal}
 
 	result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED", AdditionalObjects: &gao}
 	// result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}

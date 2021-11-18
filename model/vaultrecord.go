@@ -23,7 +23,7 @@ type VaultRecordList struct {
 
 type VaultRecord struct {
 	Linkable
-	AdditionalObjects VaultRecordAdditionalObjects `json:"additionalObjects,omitempty"`
+	AdditionalObjects *VaultRecordAdditionalObjects `json:"additionalObjects,omitempty"`
 
 	UUID     string   `json:"uuid,omitempty"`
 	Name     string   `json:"name"`
@@ -35,8 +35,8 @@ type VaultRecord struct {
 }
 
 type VaultRecordAdditionalObjects struct {
-	Audit  VaultRecordAuditAdditionalObject  `json:"audit,omitempty"`
-	Secret VaultRecordSecretAdditionalObject `json:"secret,omitempty"`
+	Audit  *VaultRecordAuditAdditionalObject  `json:"audit,omitempty"`
+	Secret *VaultRecordSecretAdditionalObject `json:"secret,omitempty"`
 }
 
 type VaultRecordAuditAdditionalObject struct {
