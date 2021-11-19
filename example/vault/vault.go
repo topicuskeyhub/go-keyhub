@@ -21,6 +21,7 @@ import (
 	"net/http"
 
 	"github.com/topicuskeyhub/go-keyhub"
+	keyhubmodel "github.com/topicuskeyhub/go-keyhub/model"
 )
 
 func main() {
@@ -56,5 +57,15 @@ func main() {
 	}
 	if len(vaultRecords) > 0 {
 		log.Println("Get records of group "+group.Name+". First record is", vaultRecords[0].Name)
+	}
+
+	vaultRecord, err := client.Vaults.GetRecord(group, "fc9d04e5-eb1e-41b3-8d68-6f2a4d9c25a3", keyhubmodel.RecordOptions{Secret: true})
+	if err != nil {
+		log.Fatalln("ERROR", err)
+	}
+
+	if vaultRecord.AdditionalObjects == nil ||
+		vaultRecord.AdditionalObjects.Secret == nil {
+		log.Fatalln("ERROR", "vaultRecord has no secrets")
 	}
 }
