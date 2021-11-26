@@ -65,7 +65,8 @@ func main() {
 	}
 
 	if vaultRecord.AdditionalObjects == nil ||
-		vaultRecord.AdditionalObjects.Secret == nil {
+		vaultRecord.AdditionalObjects.Secret == nil ||
+		vaultRecord.AdditionalObjects.Secret.Password == nil {
 		log.Fatalln("ERROR", "vaultRecord has no secrets")
 	}
 }

@@ -47,10 +47,10 @@ type VaultRecordAuditAdditionalObject struct {
 }
 
 type VaultRecordSecretAdditionalObject struct {
-	Password string `json:"password,omitempty"`
-	Totp     string `json:"totp,omitempty"`
-	File     []byte `json:"file"`
-	Comment  string `json:"comment"`
+	Password *string `json:"password,omitempty"`
+	Totp     *string `json:"totp,omitempty"`
+	File     *[]byte `json:"file"`
+	Comment  *string `json:"comment"`
 }
 
 func (r *VaultRecord) CreatedAt() time.Time {
@@ -69,15 +69,15 @@ func (r *VaultRecord) LastModifiedBy() string {
 	return r.AdditionalObjects.Audit.LastModifiedBy
 }
 
-func (r *VaultRecord) Comment() string {
+func (r *VaultRecord) Comment() *string {
 	return r.AdditionalObjects.Secret.Comment
 }
 
-func (r *VaultRecord) Password() string {
+func (r *VaultRecord) Password() *string {
 	return r.AdditionalObjects.Secret.Password
 }
 
-func (r *VaultRecord) File() []byte {
+func (r *VaultRecord) File() *[]byte {
 	return r.AdditionalObjects.Secret.File
 }
 
