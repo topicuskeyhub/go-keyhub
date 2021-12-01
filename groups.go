@@ -17,7 +17,6 @@ package keyhub
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/dghubble/sling"
 	"github.com/topicuskeyhub/go-keyhub/model"
@@ -73,36 +72,24 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 	return
 }
 
-func (s *GroupService) Get(uuid string) (g *model.Group, err error) {
-	gl := new(model.GroupList)
+func (s *GroupService) Get(uuid string) (result *model.Group, err error) {
+	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
 
 	additional := []string{}
 	additional = append(additional, "admins")
 	params := &model.GroupQueryParams{UUID: uuid, Additional: additional}
 
-	_, err = s.sling.New().Get("").QueryStruct(params).Receive(gl, errorReport)
+	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errors.New("Could not get Group '" + uuid + "'. Error: " + errorReport.Message)
 	}
 	if err == nil {
-		if len(gl.Items) > 0 {
-			g = &gl.Items[0]
+		if len(results.Items) > 0 {
+			result = &results.Items[0]
 		} else {
 			err = errors.New("Group '" + uuid + "' not found!")
 		}
-	}
-
-	return
-}
-
-func (s *GroupService) Delete(ID int) (err error) {
-	errorReport := new(model.ErrorReport)
-	idString := strconv.Itoa(ID)
-
-	_, err = s.sling.New().Delete(idString).Receive(nil, errorReport)
-	if errorReport.Code > 0 {
-		err = errors.New("Could not delete Group '" + idString + "'. Error: " + errorReport.Message)
 	}
 
 	return
