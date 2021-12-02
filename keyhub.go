@@ -44,6 +44,10 @@ type Client struct {
 	Vaults   *VaultService
 }
 
+func NewClientDefault(issuer string, clientID string, clientSecret string) (*Client, error) {
+	return NewClient(http.DefaultClient, issuer, clientID, clientSecret)
+}
+
 func NewClient(httpClient *http.Client, issuer string, clientID string, clientSecret string) (*Client, error) {
 	if httpClient.Timeout == 0 {
 		httpClient.Timeout = time.Duration(time.Second * 10)
@@ -51,7 +55,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 
 	base := sling.New().Base(issuer)
 
-	versionService := newVersionService(base.New().Client(httpClient).Set("Accept", mediatype))
+	versionService := newVersionService(base.New().Client(httpClient).Set("Accept", mediatype).Set("Content-Type", mediatype))
 	version, err := versionService.Get()
 	if err != nil {
 		return nil, err
