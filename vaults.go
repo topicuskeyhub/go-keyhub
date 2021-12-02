@@ -38,9 +38,13 @@ func (s *VaultService) Create(group *model.Group, vaultRecord *model.VaultRecord
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 	vaultRecords.Items = append(vaultRecords.Items, *vaultRecord)
-	url, _ := url.Parse(group.Self().Href)
 
-	_, err = s.sling.New().Path(url.Path+"/vault/").Post("record").BodyJSON(vaultRecords).Receive(results, errorReport)
+	url, _ := url.Parse(group.Self().Href)
+	additional := []string{}
+	additional = append(additional, "secret")
+	params := &model.VaultRecordQueryParams{Additional: additional}
+
+	_, err = s.sling.New().Path(url.Path+"/vault/").Post("record").QueryStruct(params).BodyJSON(vaultRecords).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errors.New("Could not create VaultRecord in Group '" + group.UUID + "'. Error: " + errorReport.Message)
 	}
