@@ -47,10 +47,18 @@ type VaultRecordAuditAdditionalObject struct {
 }
 
 type VaultRecordSecretAdditionalObject struct {
+	DType    string  `json:"$type"`
 	Password *string `json:"password,omitempty"`
 	Totp     *string `json:"totp,omitempty"`
 	File     *[]byte `json:"file"`
 	Comment  *string `json:"comment"`
+}
+
+func NewVaultRecord(name string, secrets *VaultRecordSecretAdditionalObject) *VaultRecord {
+	secrets.DType = "vault.VaultRecordSecrets"
+
+	return &VaultRecord{Linkable: Linkable{DType: "vault.VaultRecord"}, Name: name,
+		AdditionalObjects: &VaultRecordAdditionalObjects{Secret: secrets}}
 }
 
 func (r *VaultRecord) CreatedAt() time.Time {
