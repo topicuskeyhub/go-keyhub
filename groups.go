@@ -17,6 +17,7 @@ package keyhub
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/dghubble/sling"
 	"github.com/topicuskeyhub/go-keyhub/model"
@@ -73,6 +74,11 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 }
 
 func (s *GroupService) Get(uuid string) (result *model.Group, err error) {
+	result, err = s.GetByUUID(uuid)
+	return
+}
+
+func (s *GroupService) GetByUUID(uuid string) (result *model.Group, err error) {
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
 
@@ -92,5 +98,29 @@ func (s *GroupService) Get(uuid string) (result *model.Group, err error) {
 		}
 	}
 
+	return
+}
+
+func (s *GroupService) GetById(id int64) (result *model.Group, err error) {
+	al := new(model.Group)
+	errorReport := new(model.ErrorReport)
+	idString := strconv.FormatInt(id, 10)
+
+	additional := []string{}
+	additional = append(additional, "admins")
+	params := &model.GroupQueryParams{Additional: additional}
+
+	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not get Group '" + idString + "'. Error: " + errorReport.Message)
+		return
+	}
+	if err == nil && al == nil {
+		err = errors.New("Group '" + idString + "' not found!")
+		return
+	}
+
+	//use an intermediate variable so sling can fill that variable with the json results. When request was succesful we use the variable as return value.
+	result = al
 	return
 }

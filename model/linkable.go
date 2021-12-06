@@ -44,7 +44,7 @@ type ErrorReport struct {
 }
 
 type Link struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Rel  string `json:"rel"`
 	Type string `json:"type,omitempty"`
 	Href string `json:"href,omitempty"`

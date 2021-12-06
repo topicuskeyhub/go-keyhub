@@ -29,7 +29,7 @@ type VaultRecord struct {
 	Name     string   `json:"name"`
 	URL      string   `json:"url,omitempty"`
 	Username string   `json:"username,omitempty"`
-	Color    string   `json:"color,omitempty"`
+	Color    string   `json:"color,omitempty"` // see bottom of file for color values
 	Filename string   `json:"filename,omitempty"`
 	Types    []string `json:"types,omitempty"`
 }
@@ -90,12 +90,23 @@ func (r *VaultRecord) File() *[]byte {
 }
 
 type VaultRecordQueryParams struct {
-	UUID       string   `url:"uuid,omitempty"`
-	Additional []string `url:"additional,omitempty"`
-	Any        bool     `url:"any,omitempty"`
+	UUID         string   `url:"uuid,omitempty"`
+	Name         string   `url:"name,omitempty"`
+	Filename     string   `url:"filename,omitempty"`
+	URL          string   `url:"url,omitempty"`
+	Username     string   `url:"username,omitempty"`
+	Color        string   `url:"color,omitempty"` // see below for color values
+	NameContains string   `url:"nameContains,omitempty"`
+	Additional   []string `url:"additional,omitempty"`
 }
 
-type RecordOptions struct {
+type VaultRecordAdditionalQueryParams struct {
 	Audit  bool
 	Secret bool
 }
+
+var VaultRecordColorNone = "NONE"
+var VaultRecordColorGreen = "GREEN"
+var VaultRecordColorRed = "RED"
+var VaultRecordColorBlue = "BLUE"
+var VaultRecordColorDark = "DARK"

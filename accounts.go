@@ -17,6 +17,7 @@ package keyhub
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/dghubble/sling"
 	"github.com/topicuskeyhub/go-keyhub/model"
@@ -51,7 +52,7 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 	return
 }
 
-func (s *AccountService) Get(uuid string) (a *model.Account, err error) {
+func (s *AccountService) GetByUUID(uuid string) (result *model.Account, err error) {
 	al := new(model.AccountList)
 	errorReport := new(model.ErrorReport)
 
@@ -63,11 +64,31 @@ func (s *AccountService) Get(uuid string) (a *model.Account, err error) {
 	}
 	if err == nil {
 		if len(al.Items) > 0 {
-			a = &al.Items[0]
+			result = &al.Items[0]
 		} else {
 			err = errors.New("Account '" + uuid + "' not found!")
 		}
 	}
 
+	return
+}
+
+func (s *AccountService) GetById(id int64) (result *model.Account, err error) {
+	al := new(model.Account)
+	errorReport := new(model.ErrorReport)
+	idString := strconv.FormatInt(id, 10)
+
+	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not get Account '" + idString + "'. Error: " + errorReport.Message)
+		return
+	}
+	if err == nil && al == nil {
+		err = errors.New("Account '" + idString + "' not found!")
+		return
+	}
+
+	//use an intermediate variable so sling can fill that variable with the json results. When request was succesful we use the variable as return value.
+	result = al
 	return
 }
