@@ -130,7 +130,7 @@ func main() {
 	secrets := &keyhubmodel.VaultRecordSecretAdditionalObject{
 		Password: &password,
 	}
-	vaultRecord, err := client.Vaults.Create(group, keyhubmodel.NewVaultRecord("Terraform Password "+uuid.NewString(), secrets))
+	vaultRecord, err := client.Vaults.Create(group, keyhubmodel.NewVaultRecord("Random Password "+uuid.NewString(), secrets))
 	if err != nil {
 		log.Fatalln("ERROR", err)
 	}
@@ -178,7 +178,7 @@ func main() {
 		log.Println("Updated vaultRecord. Result is", vaultRecord.Name, ", UUID =", vaultRecord.UUID)
 	}
 
-	err = client.Vaults.Delete(group, vaultRecord.UUID)
+	err = client.Vaults.DeleteByUUID(group, vaultRecord.UUID)
 	if err != nil {
 		log.Fatalln("ERROR", err)
 	}

@@ -208,8 +208,8 @@ func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord
 	return
 }
 
-//  Retrieve a vault record by uuid for a certain group, including audit and secrets
-func (s *VaultService) Delete(group *model.Group, uuid string) (err error) {
+//  Delete a vault record by uuid for a certain group, including audit and secrets
+func (s *VaultService) DeleteByUUID(group *model.Group, uuid string) (err error) {
 	errorReport := new(model.ErrorReport)
 
 	vaultRecord, err := s.GetByUUID(group, uuid, nil)
@@ -222,6 +222,20 @@ func (s *VaultService) Delete(group *model.Group, uuid string) (err error) {
 	_, err = s.sling.New().Path(url.Path).Delete("").Receive(nil, errorReport)
 	if errorReport.Code > 0 {
 		err = errors.New("Could not delete VaultRecord '" + uuid + "' of Group '" + group.UUID + "'. Error: " + errorReport.Message)
+	}
+
+	return
+}
+
+//  Delete a vault record by ID for a certain group, including audit and secrets
+func (s *VaultService) DeleteByID(group *model.Group, id int64) (err error) {
+	errorReport := new(model.ErrorReport)
+	url, _ := url.Parse(group.Self().Href)
+	idString := strconv.FormatInt(id, 10)
+
+	_, err = s.sling.New().Path(url.Path+"/vault/record/").Delete(idString).Receive(nil, errorReport)
+	if errorReport.Code > 0 {
+		err = errors.New("Could not delete VaultRecord '" + idString + "' of Group '" + group.UUID + "'. Error: " + errorReport.Message)
 	}
 
 	return
