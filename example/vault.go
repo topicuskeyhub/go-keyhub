@@ -45,7 +45,7 @@ func main() {
 
 	client, err := keyhub.NewClientDefault(issuer, clientid, clientsecret)
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 
 	//
@@ -54,12 +54,12 @@ func main() {
 
 	version, err := client.Version.Get()
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if len(version.ContractVersions) == 0 {
-		log.Fatalln("No Contract versions")
+		log.Fatalf("No Contract versions")
 	} else {
-		log.Println("KeyHub version", version.KeyhubVersion, " has contract versions", version.ContractVersions)
+		log.Printf("KeyHub version %s has contract versions %d", version.KeyhubVersion, version.ContractVersions)
 	}
 
 	//
@@ -68,50 +68,60 @@ func main() {
 
 	var foundGroupAdmin *keyhubmodel.Account
 	if groupadmin != "nil" {
-		a, _ := client.Accounts.GetByUUID(groupadmin)
+		groupadminUUID, err := uuid.Parse(groupadmin)
+		if err != nil {
+			log.Fatalf("ERROR Provided groupadmin value is not an UUID %q", groupadmin)
+		}
+
+		a, _ := client.Accounts.GetByUUID(groupadminUUID)
 		if a != nil {
 			foundGroupAdmin = a
 		}
 	}
 	if foundGroupAdmin == nil {
-		log.Fatalln("ERROR", "No GroupAdmin found for UUID "+groupadmin)
+		log.Fatalf("ERROR No GroupAdmin found for UUID %q", groupadmin)
 	}
 
 	//TODO activate when client can get permission to add vault records directly after creating a group
 
 	// group, err := client.Groups.Create(keyhubmodel.NewGroup("Terraform "+uuid.NewString(), foundGroupAdmin))
 	// if err != nil {
-	// 	log.Fatalln("ERROR", err)
+	// 	log.Fatalf("ERROR %s", err)
 	// }
 	// if group != nil {
-	// 	log.Println("Created group. Result is", group.Name, ", UUID =", group.UUID)
+	// log.Printf("Created group. Result is %q, UUID = %q", group.Name, group.UUID)
 	// }
 	// if group.AdditionalObjects.Admins == nil ||
 	// 	group.AdditionalObjects.Admins.Items == nil {
-	// 	log.Fatalln("ERROR", "Group with UUID does not contain any group admins")
+	// 	log.Fatalf("ERROR Group with UUID does not contain any group admins")
 	// }
 	// if group.AdditionalObjects.Admins.Items[0].UUID != groupadmin {
-	// 	log.Fatalln("ERROR", "Group with UUID does not contain th correct group admin", groupadmin)
+	// 	log.Fatalf("ERROR Group with UUID does not contain the correct group admin %q", groupadmin)
 	// }
 
 	// if groupvault == "nil" {
-	// 	log.Fatalln("ERROR", "No Group specified to perform other Group & Vault operations on")
+	// 	log.Fatalf("ERROR No Group specified to perform other Group & Vault operations on")
 	// }
 
-	groups, err := client.Groups.List()
+	// groups, err := client.Groups.List()
+	// if err != nil {
+	// 	log.Fatalf("ERROR %s", err)
+	// }
+	// if len(groups) > 0 {
+	// 	log.Printf("Get groups. First group is %q UUID = %q", groups[0].Name, groups[0].UUID)
+	// }
+
+	groupvaultUUID, err := uuid.Parse(groupvault)
 	if err != nil {
-		log.Fatalln("ERROR", err)
-	}
-	if len(groups) > 0 {
-		log.Println("Get groups. First group is", groups[0].Name, ", UUID =", groups[0].UUID)
+		log.Fatalf("ERROR Provided groupvault value is not an UUID %q", groupvault)
 	}
 
-	group, err := client.Groups.Get(groupvault)
+	group, err := client.Groups.Get(groupvaultUUID)
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if group != nil {
-		log.Println("Get group. Result is", group.Name, ", UUID =", group.UUID)
+		log.Printf("Get group. Result is %q, UUID = %q", group.Name, group.UUID)
 	}
 
 	//
@@ -120,10 +130,10 @@ func main() {
 
 	vaultRecords, err := client.Vaults.GetRecords(group)
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if len(vaultRecords) > 0 {
-		log.Println("Get vaultRecords. First vaultRecord is", vaultRecords[0].Name, ", UUID =", vaultRecords[0].UUID)
+		log.Printf("Get vaultRecords. First vaultRecord is %q, UUID = %q", vaultRecords[0].Name, vaultRecords[0].UUID)
 	}
 
 	password := "Banaan"
@@ -132,55 +142,57 @@ func main() {
 	}
 	vaultRecord, err := client.Vaults.Create(group, keyhubmodel.NewVaultRecord("Random Password "+uuid.NewString(), secrets))
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if vaultRecord != nil {
-		log.Println("Created vaultRecord. Result is", vaultRecord.Name, ", UUID =", vaultRecord.UUID)
+		log.Printf("Created vaultRecord. Result is %q, UUID = %q", vaultRecord.Name, vaultRecord.UUID)
 	}
 	if vaultRecord.AdditionalObjects == nil ||
 		vaultRecord.AdditionalObjects.Secret == nil ||
 		vaultRecord.AdditionalObjects.Secret.Password == nil {
-		log.Fatalln("ERROR", "vaultRecord has no secrets")
+		log.Fatalf("ERROR vaultRecord has no secrets")
 	}
 
-	vaultRecord, err = client.Vaults.GetByUUID(group, vaultRecord.UUID, &keyhubmodel.VaultRecordAdditionalQueryParams{Audit: true, Secret: true})
+	vaultrecordUUID, _ := uuid.Parse(vaultRecord.UUID)
+	vaultRecord, err = client.Vaults.GetByUUID(group, vaultrecordUUID, &keyhubmodel.VaultRecordAdditionalQueryParams{Audit: true, Secret: true})
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if vaultRecord != nil {
-		log.Println("Get vaultRecord. Result is", vaultRecord.Name, ", UUID =", vaultRecord.UUID)
+		log.Printf("Get vaultRecord. Result is %q, UUID = %q", vaultRecord.Name, vaultRecord.UUID)
 	}
 	if vaultRecord.AdditionalObjects == nil ||
 		vaultRecord.AdditionalObjects.Audit == nil {
-		log.Fatalln("ERROR", "vaultRecord has no audit")
+		log.Fatalf("ERROR vaultRecord has no audit")
 	}
 	if vaultRecord.AdditionalObjects == nil ||
 		vaultRecord.AdditionalObjects.Secret == nil ||
 		vaultRecord.AdditionalObjects.Secret.Password == nil {
-		log.Fatalln("ERROR", "vaultRecord has no secrets")
+		log.Fatalf("ERROR vaultRecord has no secrets")
 	}
 
 	vaultRecords, err = client.Vaults.List(group, &model.VaultRecordQueryParams{Name: vaultRecord.Name}, &model.VaultRecordAdditionalQueryParams{Secret: true})
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if len(vaultRecords) > 0 {
-		log.Println("Get vaultRecords. First vaultRecord is", vaultRecords[0].Name, ", UUID =", vaultRecords[0].UUID)
+		log.Printf("Get vaultRecords. First vaultRecord is %q, UUID = %q", vaultRecords[0].Name, vaultRecords[0].UUID)
 	}
 
 	password = "Banaan2"
 	vaultRecord.AdditionalObjects.Secret.Password = &password
 	vaultRecord, err = client.Vaults.Update(group, vaultRecord)
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
 	if vaultRecord != nil {
-		log.Println("Updated vaultRecord. Result is", vaultRecord.Name, ", UUID =", vaultRecord.UUID)
+		log.Printf("Updated vaultRecord. Result %q, UUID = %q", vaultRecord.Name, vaultRecord.UUID)
 	}
 
-	err = client.Vaults.DeleteByUUID(group, vaultRecord.UUID)
+	vaultrecordUUID, _ = uuid.Parse(vaultRecord.UUID)
+	err = client.Vaults.DeleteByUUID(group, vaultrecordUUID)
 	if err != nil {
-		log.Fatalln("ERROR", err)
+		log.Fatalf("ERROR %s", err)
 	}
-	log.Println("Deleted vaultRecord", vaultRecord.UUID)
+	log.Printf("Deleted vaultRecord %q", vaultRecord.UUID)
 }

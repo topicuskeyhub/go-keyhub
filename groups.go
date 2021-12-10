@@ -16,10 +16,11 @@
 package keyhub
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/dghubble/sling"
+	"github.com/google/uuid"
 	"github.com/topicuskeyhub/go-keyhub/model"
 )
 
@@ -41,13 +42,13 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 
 	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not create Group. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not create Group. Error: %s", errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
 			result = &results.Items[0]
 		} else {
-			err = errors.New("Created Group not found!")
+			err = fmt.Errorf("Created Group not found")
 		}
 	}
 
@@ -60,7 +61,7 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 
 	_, err = s.sling.New().Get("").Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Groups. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Groups. Error: %s", errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -73,28 +74,28 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 	return
 }
 
-func (s *GroupService) Get(uuid string) (result *model.Group, err error) {
+func (s *GroupService) Get(uuid uuid.UUID) (result *model.Group, err error) {
 	result, err = s.GetByUUID(uuid)
 	return
 }
 
-func (s *GroupService) GetByUUID(uuid string) (result *model.Group, err error) {
+func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error) {
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
 
 	additional := []string{}
 	additional = append(additional, "admins")
-	params := &model.GroupQueryParams{UUID: uuid, Additional: additional}
+	params := &model.GroupQueryParams{UUID: uuid.String(), Additional: additional}
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Group '" + uuid + "'. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Group %q. Error: %s", uuid.String(), errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
 			result = &results.Items[0]
 		} else {
-			err = errors.New("Group '" + uuid + "' not found!")
+			err = fmt.Errorf("Group %q not found", uuid.String())
 		}
 	}
 
@@ -112,11 +113,11 @@ func (s *GroupService) GetById(id int64) (result *model.Group, err error) {
 
 	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Group '" + idString + "'. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Group %q. Error: %s", idString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
-		err = errors.New("Group '" + idString + "' not found!")
+		err = fmt.Errorf("Group %q not found", idString)
 		return
 	}
 

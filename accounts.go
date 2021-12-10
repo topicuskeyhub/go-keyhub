@@ -16,10 +16,11 @@
 package keyhub
 
 import (
-	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/dghubble/sling"
+	"github.com/google/uuid"
 	"github.com/topicuskeyhub/go-keyhub/model"
 )
 
@@ -39,7 +40,7 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 
 	_, err = s.sling.New().Get("").Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Accounts. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Accounts. Error: %s", errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -52,21 +53,21 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 	return
 }
 
-func (s *AccountService) GetByUUID(uuid string) (result *model.Account, err error) {
+func (s *AccountService) GetByUUID(uuid uuid.UUID) (result *model.Account, err error) {
 	al := new(model.AccountList)
 	errorReport := new(model.ErrorReport)
 
-	params := &model.AccountQueryParams{UUID: uuid}
+	params := &model.AccountQueryParams{UUID: uuid.String()}
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Account '" + uuid + "'. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Account %q. Error: %s", uuid, errorReport.Message)
 	}
 	if err == nil {
 		if len(al.Items) > 0 {
 			result = &al.Items[0]
 		} else {
-			err = errors.New("Account '" + uuid + "' not found!")
+			err = fmt.Errorf("Account %q not found", uuid.String())
 		}
 	}
 
@@ -80,11 +81,11 @@ func (s *AccountService) GetById(id int64) (result *model.Account, err error) {
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = errors.New("Could not get Account '" + idString + "'. Error: " + errorReport.Message)
+		err = fmt.Errorf("Could not get Account %q. Error: %s", idString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
-		err = errors.New("Account '" + idString + "' not found!")
+		err = fmt.Errorf("Account %q not found", idString)
 		return
 	}
 
