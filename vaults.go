@@ -102,12 +102,6 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 	return
 }
 
-// GetRecord Retrieve a vault record by uuid for a certain group, including audit and secrets
-func (s *VaultService) GetRecord(group *model.Group, uuid uuid.UUID, options model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
-	result, err = s.GetByUUID(group, uuid, &options)
-	return
-}
-
 //  Retrieve a vault record by uuid for a certain group, including audit and secrets
 func (s *VaultService) GetByUUID(group *model.Group, uuid uuid.UUID, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
 	results := new(model.VaultRecordList)

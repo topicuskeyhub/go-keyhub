@@ -74,11 +74,6 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 	return
 }
 
-func (s *GroupService) Get(uuid uuid.UUID) (result *model.Group, err error) {
-	result, err = s.GetByUUID(uuid)
-	return
-}
-
 func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error) {
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)

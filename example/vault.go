@@ -116,7 +116,7 @@ func main() {
 		log.Fatalf("ERROR Provided groupvault value is not an UUID %q", groupvault)
 	}
 
-	group, err := client.Groups.Get(groupvaultUUID)
+	group, err := client.Groups.GetByUUID(groupvaultUUID)
 	if err != nil {
 		log.Fatalf("ERROR %s", err)
 	}
