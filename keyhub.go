@@ -37,10 +37,15 @@ const (
 )
 
 type Client struct {
-	ID      string
-	Version *VersionService
-	Groups  *GroupService
-	Vaults  *VaultService
+	ID       string
+	Version  *VersionService
+	Accounts *AccountService
+	Groups   *GroupService
+	Vaults   *VaultService
+}
+
+func NewClientDefault(issuer string, clientID string, clientSecret string) (*Client, error) {
+	return NewClient(http.DefaultClient, issuer, clientID, clientSecret)
 }
 
 func NewClient(httpClient *http.Client, issuer string, clientID string, clientSecret string) (*Client, error) {
@@ -50,7 +55,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 
 	base := sling.New().Base(issuer)
 
-	versionService := newVersionService(base.New().Client(httpClient).Set("Accept", mediatype))
+	versionService := newVersionService(base.New().Client(httpClient).Set("Accept", mediatype).Set("Content-Type", mediatype))
 	version, err := versionService.Get()
 	if err != nil {
 		return nil, err
@@ -66,7 +71,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		return nil, fmt.Errorf("KeyHub %v does not support api contract version %v", version.KeyhubVersion, supportedContractVersion)
 	}
 
-	versionedSling := base.New().Set("Accept", fmt.Sprintf("%v;version=%v", mediatype, supportedContractVersion))
+	versionedSling := base.New().Set("Accept", fmt.Sprintf("%v;version=%v", mediatype, supportedContractVersion)).Set("Content-Type", fmt.Sprintf("%v;version=%v", mediatype, supportedContractVersion))
 
 	ctx := oidc.ClientContext(context.Background(), httpClient)
 	provider, err := oidc.NewProvider(ctx, issuer)
@@ -90,11 +95,11 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 			Base: oauth2Client.Transport,
 		},
 	}
-
 	return &Client{
-		ID:      clientID,
-		Version: versionService,
-		Groups:  newGroupService(oauth2Sling.New()),
-		Vaults:  newVaultService(versionedSling.New().Client(vaultClient)),
+		ID:       clientID,
+		Version:  versionService,
+		Accounts: newAccountService(oauth2Sling.New()),
+		Groups:   newGroupService(oauth2Sling.New()),
+		Vaults:   newVaultService(versionedSling.New().Client(vaultClient)),
 	}, nil
 }

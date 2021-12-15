@@ -16,57 +16,107 @@
 package keyhub
 
 import (
-	"errors"
+	"fmt"
+	"strconv"
 
 	"github.com/dghubble/sling"
+	"github.com/google/uuid"
+	"github.com/topicuskeyhub/go-keyhub/model"
 )
-
-type groupList struct {
-	Items []Group `json:"items"`
-}
-
-type Group struct {
-	UUID  string `json:"uuid"`
-	Name  string `json:"name"`
-	Links []struct {
-		ID   int    `json:"id"`
-		Rel  string `json:"rel"`
-		Type string `json:"type"`
-		Href string `json:"href"`
-	} `json:"links"`
-}
 
 type GroupService struct {
 	sling *sling.Sling
 }
 
-type GroupParams struct {
-	UUID string `url:"uuid,omitempty"`
-}
-
 func newGroupService(sling *sling.Sling) *GroupService {
 	return &GroupService{
-		sling: sling.Path("/keyhub/rest/v1/group"),
+		sling: sling.Path("/keyhub/rest/v1/group/"),
 	}
 }
 
-func (s *GroupService) List() (groups []Group, err error) {
-	gl := new(groupList)
-	_, err = s.sling.New().Get("").ReceiveSuccess(gl)
-	groups = gl.Items
+func (s *GroupService) Create(group *model.Group) (result *model.Group, err error) {
+	groups := new(model.GroupList)
+	results := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+	groups.Items = append(groups.Items, *group)
+
+	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not create Group. Error: %s", errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) > 0 {
+			result = &results.Items[0]
+		} else {
+			err = fmt.Errorf("Created Group not found")
+		}
+	}
+
 	return
 }
 
-func (s *GroupService) Get(uuid string) (g *Group, err error) {
-	gl := new(groupList)
-	params := &GroupParams{UUID: uuid}
-	_, err = s.sling.New().Get("").QueryStruct(params).ReceiveSuccess(gl)
+func (s *GroupService) List() (groups []model.Group, err error) {
+	results := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+
+	_, err = s.sling.New().Get("").Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not get Groups. Error: %s", errorReport.Message)
+	}
 	if err == nil {
-		if len(gl.Items) > 0 {
-			g = &gl.Items[0]
+		if len(results.Items) > 0 {
+			groups = results.Items
 		} else {
-			err = errors.New("Group '" + uuid + "' not found!")
+			groups = []model.Group{}
 		}
 	}
+
+	return
+}
+
+func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error) {
+	results := new(model.GroupList)
+	errorReport := new(model.ErrorReport)
+
+	additional := []string{}
+	additional = append(additional, "admins")
+	params := &model.GroupQueryParams{UUID: uuid.String(), Additional: additional}
+
+	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not get Group %q. Error: %s", uuid.String(), errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) > 0 {
+			result = &results.Items[0]
+		} else {
+			err = fmt.Errorf("Group %q not found", uuid.String())
+		}
+	}
+
+	return
+}
+
+func (s *GroupService) GetById(id int64) (result *model.Group, err error) {
+	al := new(model.Group)
+	errorReport := new(model.ErrorReport)
+	idString := strconv.FormatInt(id, 10)
+
+	additional := []string{}
+	additional = append(additional, "admins")
+	params := &model.GroupQueryParams{Additional: additional}
+
+	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not get Group %q. Error: %s", idString, errorReport.Message)
+		return
+	}
+	if err == nil && al == nil {
+		err = fmt.Errorf("Group %q not found", idString)
+		return
+	}
+
+	//use an intermediate variable so sling can fill that variable with the json results. When request was succesful we use the variable as return value.
+	result = al
 	return
 }
