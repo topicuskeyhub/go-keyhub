@@ -17,12 +17,13 @@ package keyhub
 
 import (
 	"fmt"
-	"net/url"
-	"strconv"
-
 	"github.com/dghubble/sling"
 	"github.com/google/uuid"
 	"github.com/topicuskeyhub/go-keyhub/model"
+	"math/big"
+	"net/url"
+	"regexp"
+	"strconv"
 )
 
 type VaultService struct {
@@ -96,6 +97,117 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 			records = results.Items
 		} else {
 			records = []model.VaultRecord{}
+		}
+	}
+
+	return
+}
+
+func (s *VaultService) getMyClientId() (id int64, err error) {
+
+	me := new(model.Client)
+
+	errorReport := new(model.ErrorReport)
+
+	_, err = s.sling.New().Get("/keyhub/rest/v1/client/me").Receive(&me, errorReport)
+	if err != nil {
+		err = fmt.Errorf("could not determine client details, error:", errorReport.Message)
+	}
+
+	id = me.Self().ID
+
+	return
+}
+
+func (s *VaultService) FindByIDForClient(id int64, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
+	query := model.VaultRecordSearchQueryParams{
+		ID: strconv.FormatInt(id, 10),
+	}
+
+	return s.findForClient(query, additional)
+
+}
+
+func (s *VaultService) FindByUUIDForClient(uuid uuid.UUID, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
+
+	query := model.VaultRecordSearchQueryParams{
+		UUID: uuid.String(),
+	}
+
+	return s.findForClient(query, additional)
+}
+
+func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
+	results := new(model.VaultRecordList)
+	errorReport := new(model.ErrorReport)
+
+	clientId, err := s.getMyClientId()
+	if err == nil {
+		query.AccessibleByClient = strconv.FormatInt(clientId, 10)
+	}
+
+	additionalParams := []string{}
+	// If secrets are requested we need to do a new request so no need for audit data in search results
+	if additional.Secret == false {
+		if additional.Audit {
+			additionalParams = append(additionalParams, "audit")
+		}
+	}
+	query.Additional = additionalParams
+
+	_, err = s.sling.New().Get("/keyhub/rest/v1/vaultrecord/").QueryStruct(query).Receive(results, errorReport)
+
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not find VaultRecord. Error: %s", errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) > 0 {
+			result = &results.Items[0]
+
+			if additional.Secret {
+				// if secrets are requested, we need to retrieve the record again from the group url.
+				// If not we can simply return the search result
+
+				r, _ := regexp.Compile("^((.+)/group/([0-9]+))/vault/record/([0-9]+)")
+				matches := r.FindStringSubmatch(result.Self().Href)
+				// 0 = full url (unused)
+				// 1 = group url
+				// 2 = base url (unused)
+				// 3 = group id
+				// 4 = record id
+
+				// group id
+				gid := big.Int{}
+				gid.SetString(matches[3], 10)
+
+				// record id
+				rid := big.Int{}
+				rid.SetString(matches[4], 10)
+
+				// Build a fake group we can use for retreiving a record without another rest call .
+				fakegroup := &model.Group{Linkable: model.Linkable{Links: make([]model.Link, 1)}}
+				fakegroup.Links[0].Href = matches[1]
+				fakegroup.Links[0].Rel = "self"
+				fakegroup.Links[0].ID = gid.Int64()
+				_ = fakegroup
+
+				/*
+					// The "good" way, make an extra call to retrieve the group
+					gs := newGroupService(s.sling)
+					group, err := gs.GetById(gid.Int64())
+					if err != nil {
+						err = fmt.Errorf("Could not retrieve group for VaultRecord. Error: %s", err.Error())
+					}
+					_ = group
+				*/
+
+				return s.GetByID(fakegroup, rid.Int64(), additional)
+			} else {
+				return result, err
+			}
+
+		} else {
+			err = fmt.Errorf("no VaultRecords found")
 		}
 	}
 

@@ -105,6 +105,13 @@ type VaultRecordAdditionalQueryParams struct {
 	Secret bool
 }
 
+type VaultRecordSearchQueryParams struct {
+	UUID               string   `url:"uuid,omitempty"`
+	ID                 string   `url:"id,omitempty"`
+	AccessibleByClient string   `url:"accessibleByClient"`
+	Additional         []string `url:"additional,omitempty"`
+}
+
 var VaultRecordColorNone = "NONE"
 var VaultRecordColorGreen = "GREEN"
 var VaultRecordColorRed = "RED"
