@@ -32,6 +32,10 @@ type GroupAdditionalObjects struct {
 	Admins *GroupAccountList `json:"admins,omitempty"`
 }
 
+func NewEmptyGroup(name string) (result *Group) {
+	return &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}
+}
+
 func NewGroup(name string, groupadmin *Account) (result *Group) {
 	gal := GroupAccountList{DType: "LinkableWrapper"}
 	gra := NewGroupAccount(groupadmin, "MANAGER")
