@@ -39,12 +39,10 @@ func NewGroup(name string, groupadmin *Account) (result *Group) {
 	gao := GroupAdditionalObjects{Admins: &gal}
 
 	result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED", AdditionalObjects: &gao}
-	// result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}
 	return
 }
 
-// This struct needs a DType because it is used in an AdditionalObjects, which requires a $type
-// to resolve which Java class is to be used
+// GroupAccountList This struct needs a DType because it is used in an AdditionalObjects, which requires a $type to resolve which Java class is to be used
 type GroupAccountList struct {
 	DType string         `json:"$type,omitempty"`
 	Items []GroupAccount `json:"items"`
