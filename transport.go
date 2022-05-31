@@ -25,7 +25,7 @@ type Transport struct {
 	Base http.RoundTripper
 }
 
-// Based on oauth2.Transport.RoundTrip()
+//RoundTrip Based on oauth2.Transport.RoundTrip()
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	token, err := t.Base.(*oauth2.Transport).Source.Token()
 	if err != nil {
@@ -38,7 +38,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return res, err
 }
 
-// See oauth2.Transport.cloneRequest()
+//cloneRequest See oauth2.Transport.cloneRequest()
 func cloneRequest(r *http.Request) *http.Request {
 	// shallow copy of the struct
 	r2 := new(http.Request)

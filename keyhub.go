@@ -30,7 +30,7 @@ import (
 
 const (
 	/* KeyHub contract version supported by this client */
-	supportedContractVersion = 40
+	supportedContractVersion = 54
 
 	/* KeyHub json mediatype */
 	mediatype = "application/vnd.topicus.keyhub+json"
@@ -45,17 +45,20 @@ type Client struct {
 }
 
 func NewClientDefault(issuer string, clientID string, clientSecret string) (*Client, error) {
+	http.DefaultClient.Transport = http.DefaultTransport
+
+	if http.DefaultClient.Timeout == 0 {
+		http.DefaultClient.Timeout = time.Duration(time.Second * 10)
+	}
+
 	return NewClient(http.DefaultClient, issuer, clientID, clientSecret)
 }
 
 func NewClient(httpClient *http.Client, issuer string, clientID string, clientSecret string) (*Client, error) {
-	if httpClient.Timeout == 0 {
-		httpClient.Timeout = time.Duration(time.Second * 10)
-	}
 
-	base := sling.New().Base(issuer)
+	base := sling.New().Client(httpClient).Base(issuer)
 
-	versionService := newVersionService(base.New().Client(httpClient).Set("Accept", mediatype).Set("Content-Type", mediatype))
+	versionService := newVersionService(base.New().Set("Accept", "application/json").Set("Content-Type", "application/json"))
 	version, err := versionService.Get()
 	if err != nil {
 		return nil, err
@@ -86,7 +89,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		TokenURL:     provider.Endpoint().TokenURL + "?authVault=access",
 	}
 	oauth2Client := appClientConf.Client(ctx)
-	oauth2Client.Timeout = time.Duration(time.Second * 10)
+	oauth2Client.Timeout = httpClient.Timeout
 
 	oauth2Sling := versionedSling.New().Client(oauth2Client)
 
