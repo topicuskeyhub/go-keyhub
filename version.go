@@ -16,15 +16,12 @@
 package keyhub
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/dghubble/sling"
+	"github.com/topicuskeyhub/go-keyhub/model"
 )
-
-type Version struct {
-	KeyhubVersion    string `json:"keyHubVersion"`
-	ContractVersions []int  `json:"contractVersions"`
-}
 
 type VersionService struct {
 	sling *sling.Sling
@@ -36,11 +33,21 @@ func newVersionService(sling *sling.Sling) *VersionService {
 	}
 }
 
-func (s *VersionService) Get() (v *Version, err error) {
-	v = new(Version)
-	_, err = s.sling.New().Get("").ReceiveSuccess(v)
-	if err == nil {
-		v.KeyhubVersion = strings.TrimPrefix(v.KeyhubVersion, "keyhub-")
+func (s *VersionService) Get() (v *model.VersionInfo, err error) {
+	results := new(model.VersionInfo)
+	errorReport := new(model.ErrorReport)
+
+	resp, err := s.sling.New().Get("").Receive(results, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not get acceptable contract versions. Error: %s", errorReport.Message)
 	}
+	if resp.StatusCode >= 300 {
+		err = fmt.Errorf("Could not fetch acceptable contract versions. Error: %s", resp.Status)
+	}
+	if err == nil {
+		results.KeyhubVersion = strings.TrimPrefix(results.KeyhubVersion, "keyhub-")
+	}
+
+	v = results
 	return
 }

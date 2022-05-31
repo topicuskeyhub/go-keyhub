@@ -61,13 +61,13 @@ func (s *VaultService) Create(group *model.Group, vaultRecord *model.VaultRecord
 	return
 }
 
-// GetRecords Retrieve all vault records for a group including audit (secrets are not included)
+//GetRecords Retrieve all vault records for a group including audit (secrets are not included)
 func (s *VaultService) GetRecords(g *model.Group) (result []model.VaultRecord, err error) {
 	result, err = s.List(g, nil, nil)
 	return
 }
 
-// List Retrieve all vault records for a group (secrets are not included, default audit = true)
+//List Retrieve all vault records for a group (secrets are not included, default audit = true)
 func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryParams, additional *model.VaultRecordAdditionalQueryParams) (records []model.VaultRecord, err error) {
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
@@ -102,7 +102,7 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 	return
 }
 
-//  Retrieve a vault record by uuid for a certain group, including audit and secrets
+//GetByUUID Retrieve a vault record by uuid for a certain group, including audit and secrets
 func (s *VaultService) GetByUUID(group *model.Group, uuid uuid.UUID, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
@@ -138,7 +138,7 @@ func (s *VaultService) GetByUUID(group *model.Group, uuid uuid.UUID, additional 
 	return
 }
 
-//  Retrieve a vault record by ID for a certain group, including audit and secrets
+//GetByID  Retrieve a vault record by ID for a certain group, including audit and secrets
 func (s *VaultService) GetByID(group *model.Group, id int64, additional *model.VaultRecordAdditionalQueryParams) (result *model.VaultRecord, err error) {
 	al := new(model.VaultRecord)
 	errorReport := new(model.ErrorReport)
@@ -175,7 +175,7 @@ func (s *VaultService) GetByID(group *model.Group, id int64, additional *model.V
 	return
 }
 
-//  Retrieve a vault record by uuid for a certain group, including audit and secrets
+//Update Retrieve a vault record by uuid for a certain group, including audit and secrets
 func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord) (result *model.VaultRecord, err error) {
 	al := new(model.VaultRecord)
 	errorReport := new(model.ErrorReport)
@@ -203,7 +203,7 @@ func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord
 	return
 }
 
-//  Delete a vault record by uuid for a certain group, including audit and secrets
+//DeleteByUUID  Delete a vault record by uuid for a certain group, including audit and secrets
 func (s *VaultService) DeleteByUUID(group *model.Group, uuid uuid.UUID) (err error) {
 	errorReport := new(model.ErrorReport)
 
@@ -222,7 +222,7 @@ func (s *VaultService) DeleteByUUID(group *model.Group, uuid uuid.UUID) (err err
 	return
 }
 
-//  Delete a vault record by ID for a certain group, including audit and secrets
+//DeleteByID  Delete a vault record by ID for a certain group, including audit and secrets
 func (s *VaultService) DeleteByID(group *model.Group, id int64) (err error) {
 	errorReport := new(model.ErrorReport)
 	url, _ := url.Parse(group.Self().Href)
