@@ -23,6 +23,14 @@ import (
 const (
 	GROUP_RIGHT_MANAGER = "MANAGER"
 	GROUP_RIGHT_MEMBER  = "NORMAL"
+
+	GROUP_EXT_ACCESS_NOT = "NOT_ALLOWED"
+	GROUP_EXT_ACCESS_1W  = "ONE_WEEK"
+	GROUP_EXT_ACCESS_2W  = "TWO_WEEKS"
+
+	VAULT_RECOVERY_NONE     = "NONE"
+	VAULT_RECOVERY_KEY_ONLY = "RECOVERY_KEY_ONLY"
+	VAULT_RECOVERY_FULL     = "FULL"
 )
 
 type GroupList struct {
@@ -52,7 +60,7 @@ type Group struct {
 	AuthorizingGroupAuditing     *Group `json:"authorizingGroupAuditing,omitempty"`
 	NestedUnder                  *Group `json:"nestedUnder,omitempty"`
 	//Classification               string `json:"classification,omitempty"`               //group_GroupClassificationPrimer{...}
-	VaultRecovery string `json:"vaultRecovery,omitempty"` //[ NONE, RECOVERY_KEY_ONLY, FULL ]
+	VaultRecovery string `json:"vaultRecovery,omitempty"`
 }
 
 func (g *Group) AddManager(account *Account) {
@@ -64,6 +72,26 @@ func (g *Group) AddMember(account *Account) {
 
 	g.addGroupAccount(account, GROUP_RIGHT_MEMBER)
 
+}
+
+func (g *Group) DisableExtendedAccess() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_NOT
+}
+func (g *Group) EnableExtendedAccess1W() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_1W
+}
+func (g *Group) EnableExtendedAccess2W() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_2W
+}
+
+func (g *Group) DisableVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_NONE
+}
+func (g *Group) KeyOnlyVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_KEY_ONLY
+}
+func (g *Group) FullVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_FULL
 }
 
 func (g *Group) addGroupAccount(account *Account, groupRight string) {
