@@ -120,7 +120,7 @@ func NewEmptyGroup(name string) (result *Group) {
 }
 
 func NewGroup(name string, groupadmin *Account) (result *Group) {
-	result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}
+	result = NewEmptyGroup(name)
 	result.AuditConfig = NewGroupAuditConfig()
 	result.AddManager(groupadmin)
 	return
