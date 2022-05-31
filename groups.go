@@ -17,6 +17,8 @@ package keyhub
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 
 	"github.com/dghubble/sling"
@@ -42,6 +44,7 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 
 	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
 	if errorReport.Code > 0 {
+		fmt.Println(errorReport.StackTrace)
 		err = fmt.Errorf("Could not create Group. Error: %s", errorReport.Message)
 	}
 	if err == nil {
@@ -49,6 +52,28 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 			result = &results.Items[0]
 		} else {
 			err = fmt.Errorf("Created Group not found")
+		}
+	}
+
+	return
+}
+
+func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAccountList) (results *model.GroupAccountList, err error) {
+
+	idString := strconv.FormatInt(group.Self().ID, 10)
+	fmt.Println("idString", idString)
+
+	errorReport := new(model.ErrorReport)
+
+	response, err := s.sling.New().Post(idString+"/account").BodyJSON(list).Receive(results, errorReport)
+	fmt.Println("Request", response.Request.URL)
+
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not create memberschip. Error: %s", errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) == 0 {
+			err = fmt.Errorf("Created memberships not returned")
 		}
 	}
 
@@ -82,7 +107,12 @@ func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error
 	additional = append(additional, "admins")
 	params := &model.GroupQueryParams{UUID: uuid.String(), Additional: additional}
 
-	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
+	var response *http.Response
+	response, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
+
+	data, err := io.ReadAll(response.Body)
+	fmt.Printf("Response: %s, %s", err, data)
+
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not get Group %q. Error: %s", uuid.String(), errorReport.Message)
 	}
