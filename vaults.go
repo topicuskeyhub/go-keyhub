@@ -110,8 +110,13 @@ func (s *VaultService) getMyClientId() (id int64, err error) {
 	errorReport := new(model.ErrorReport)
 
 	_, err = s.sling.New().Get("/keyhub/rest/v1/client/me").Receive(&me, errorReport)
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("could not determine client details, errorReport:", errorReport.Message)
+		return
+	}
 	if err != nil {
-		err = fmt.Errorf("could not determine client details, error:", errorReport.Message)
+		err = fmt.Errorf("could not determine client details, error:", err.Error())
+		return
 	}
 
 	id = me.Self().ID
