@@ -7,7 +7,7 @@ import (
 	"github.com/topicuskeyhub/go-keyhub"
 	"github.com/topicuskeyhub/go-keyhub/model"
 	"log"
-	"math/big"
+	"strconv"
 )
 
 func main() {
@@ -17,6 +17,7 @@ func main() {
 	var clientid string
 	var clientsecret string
 	var record string
+	var err error
 
 	// flags declaration using flag package
 	flag.StringVar(&issuer, "i", "https://test.topicus-keyhub.com", "Specify issuer")
@@ -34,30 +35,28 @@ func main() {
 
 	additional := &model.VaultRecordAdditionalQueryParams{Secret: true, Audit: true}
 
-	recordUUID, err := uuid.Parse(record)
+	recordUUID, errUUID := uuid.Parse(record)
+	recordID, errID := strconv.ParseInt(record, 10, 64)
+	if errUUID != nil && errID != nil {
+		log.Fatalln("-r is not a valid uuid or id")
+	}
 
 	var vaultRecord *model.VaultRecord
 
-	if err == nil {
+	if errUUID == nil {
 		vaultRecord, err = client.Vaults.FindByUUIDForClient(recordUUID, additional)
 	} else {
-		recordid := big.Int{}
-		recordid.SetString(record, 10)
-		vaultRecord, err = client.Vaults.FindByIDForClient(recordid.Int64(), additional)
+		vaultRecord, err = client.Vaults.FindByIDForClient(recordID, additional)
 	}
 
 	if err != nil {
 		log.Fatalln("vaults.FindByXXXXForClient", err.Error())
 	}
 
-	outJson("vault record", vaultRecord)
-
-}
-
-func outJson(name string, v any) {
-	out, err := json.MarshalIndent(v, "", "  ")
+	out, err := json.MarshalIndent(vaultRecord, "", "  ")
 	if err != nil {
-		log.Fatalln("outJson: ", err.Error())
+		log.Fatalln("Json marshal error: ", err.Error())
 	}
-	log.Printf("%s: \n%s\n\n", name, out)
+	log.Printf("vault record found: \n%s\n\n", out)
+
 }
