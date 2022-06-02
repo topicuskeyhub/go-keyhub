@@ -30,10 +30,10 @@ import (
 
 const (
 	/* KeyHub contract version supported by this client */
-	supportedContractVersion = 54
+	SupportedContractVersion = 54
 
 	/* KeyHub json mediatype */
-	mediatype = "application/vnd.topicus.keyhub+json"
+	Mediatype = "application/vnd.topicus.keyhub+json"
 )
 
 type Client struct {
@@ -65,16 +65,16 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 	}
 	isContractVersionSupported := false
 	for _, contractVersion := range version.ContractVersions {
-		if supportedContractVersion == contractVersion {
+		if SupportedContractVersion == contractVersion {
 			isContractVersionSupported = true
 			break
 		}
 	}
 	if !isContractVersionSupported {
-		return nil, fmt.Errorf("KeyHub %v does not support api contract version %v", version.KeyhubVersion, supportedContractVersion)
+		return nil, fmt.Errorf("KeyHub %v does not support api contract version %v", version.KeyhubVersion, SupportedContractVersion)
 	}
 
-	versionedSling := base.New().Set("Accept", fmt.Sprintf("%v;version=%v", mediatype, supportedContractVersion)).Set("Content-Type", fmt.Sprintf("%v;version=%v", mediatype, supportedContractVersion))
+	versionedSling := base.New().Set("Accept", fmt.Sprintf("%v;version=%v", Mediatype, SupportedContractVersion)).Set("Content-Type", fmt.Sprintf("%v;version=%v", Mediatype, SupportedContractVersion))
 
 	ctx := oidc.ClientContext(context.Background(), httpClient)
 	provider, err := oidc.NewProvider(ctx, issuer)

@@ -77,6 +77,7 @@ func main() {
 		if a != nil {
 			foundGroupAdmin = a
 		}
+
 	}
 	if foundGroupAdmin == nil {
 		log.Fatalf("ERROR No GroupAdmin found for UUID %q", groupadmin)
