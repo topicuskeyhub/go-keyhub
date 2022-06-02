@@ -15,7 +15,9 @@
 
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type VaultRecordList struct {
 	Items []VaultRecord `json:"items"`
@@ -103,6 +105,36 @@ type VaultRecordQueryParams struct {
 type VaultRecordAdditionalQueryParams struct {
 	Audit  bool
 	Secret bool
+}
+
+type VaultRecordSearchQueryParams struct {
+	UUID                         string    `url:"uuid,omitempty"`
+	ID                           string    `url:"id,omitempty"`
+	AccessibleByClient           string    `url:"accessibleByClient,omitempty"`
+	Additional                   []string  `url:"additional,omitempty"`
+	AccessibleByAccount          string    `url:"accessibleByAccount,omitempty"`
+	AccessibleByAccountAsManager string    `url:"accessibleByAccountAsManager,omitempty"`
+	Any                          bool      `url:"any,omitempty"`
+	CreatedAfter                 time.Time `json:"createdAfter,omitempty"`
+	CreatedBefore                time.Time `json:"createdBefore,omitempty"`
+	ModifiedSince                time.Time `json:"modifiedSince,omitempty"`
+	Exclude                      []string  `url:"exclude,omitempty"`
+	Q                            string    `json:"q,omitempty"`
+	Color                        string    `url:"color,omitempty"` // see below for color values
+	ExpireWarningBeforeOrAt      time.Time `url:"expireWarningBeforeOrAt"`
+	Filename                     string    `url:"filename,omitempty"`
+	HasNoPolicy                  bool      `url:"hasNoPolicy,omitempty"`
+	HasParent                    bool      `url:"hasParent,omitempty"`
+	HasValidPolicy               bool      `url:"hasValidPolicy,omitempty"`
+	Name                         string    `url:"name,omitempty"`
+	NameContains                 string    `url:"nameContains,omitempty"`
+	Parent                       string    `url:"parent,omitempty"`
+	Secret                       string    `url:"secret,omitempty"`
+	ShareExpiresBeforeOrAt       time.Time `url:"shareExpiresBeforeOrAt,omitempty"`
+	Url                          string    `url:"url,omitempty"`
+	Username                     string    `url:"username,omitempty"`
+	Uuid                         string    `url:"uuid,omitempty"`
+	Vault                        string    `url:"vault,omitempty"`
 }
 
 var VaultRecordColorNone = "NONE"
