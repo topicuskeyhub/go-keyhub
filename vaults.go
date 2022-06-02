@@ -17,13 +17,14 @@ package keyhub
 
 import (
 	"fmt"
-	"github.com/dghubble/sling"
-	"github.com/google/uuid"
-	"github.com/topicuskeyhub/go-keyhub/model"
 	"math/big"
 	"net/url"
 	"regexp"
 	"strconv"
+
+	"github.com/dghubble/sling"
+	"github.com/google/uuid"
+	"github.com/topicuskeyhub/go-keyhub/model"
 )
 
 type VaultService struct {
@@ -111,11 +112,11 @@ func (s *VaultService) getMyClientId() (id int64, err error) {
 
 	_, err = s.sling.New().Get("/keyhub/rest/v1/client/me").Receive(&me, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("could not determine client details, errorReport:", errorReport.Message)
+		err = fmt.Errorf("could not determine client details, errorReport: %s", errorReport.Message)
 		return
 	}
 	if err != nil {
-		err = fmt.Errorf("could not determine client details, error:", err.Error())
+		err = fmt.Errorf("could not determine client details, error: %s", err.Error())
 		return
 	}
 
@@ -146,14 +147,14 @@ func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, a
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 
-	clientId, err := s.getMyClientId()
+	clientID, err := s.getMyClientId()
 	if err == nil {
-		query.AccessibleByClient = strconv.FormatInt(clientId, 10)
+		query.AccessibleByClient = strconv.FormatInt(clientID, 10)
 	}
 
 	additionalParams := []string{}
 	// If secrets are requested we need to do a new request so no need for audit data in search results
-	if additional.Secret == false {
+	if !additional.Secret {
 		if additional.Audit {
 			additionalParams = append(additionalParams, "audit")
 		}
