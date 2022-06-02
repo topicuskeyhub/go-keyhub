@@ -55,6 +55,26 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 	return
 }
 
+func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAccountList) (results *model.GroupAccountList, err error) {
+
+	idString := strconv.FormatInt(group.Self().ID, 10)
+
+	errorReport := new(model.ErrorReport)
+
+	_, err = s.sling.New().Post(idString+"/account").BodyJSON(list).Receive(results, errorReport)
+
+	if errorReport.Code > 0 {
+		err = fmt.Errorf("Could not create memberschip. Error: %s", errorReport.Message)
+	}
+	if err == nil {
+		if len(results.Items) == 0 {
+			err = fmt.Errorf("Created memberships not returned")
+		}
+	}
+
+	return
+}
+
 func (s *GroupService) List() (groups []model.Group, err error) {
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
@@ -83,6 +103,7 @@ func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error
 	params := &model.GroupQueryParams{UUID: uuid.String(), Additional: additional}
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
+
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not get Group %q. Error: %s", uuid.String(), errorReport.Message)
 	}

@@ -15,6 +15,23 @@
 
 package model
 
+import (
+	"encoding/json"
+)
+
+const (
+	GROUP_RIGHT_MANAGER = "MANAGER"
+	GROUP_RIGHT_MEMBER  = "NORMAL"
+
+	GROUP_EXT_ACCESS_NOT = "NOT_ALLOWED"
+	GROUP_EXT_ACCESS_1W  = "ONE_WEEK"
+	GROUP_EXT_ACCESS_2W  = "TWO_WEEKS"
+
+	VAULT_RECOVERY_NONE     = "NONE"
+	VAULT_RECOVERY_KEY_ONLY = "RECOVERY_KEY_ONLY"
+	VAULT_RECOVERY_FULL     = "FULL"
+)
+
 type GroupList struct {
 	Items []Group `json:"items"`
 }
@@ -23,9 +40,74 @@ type Group struct {
 	Linkable
 	AdditionalObjects *GroupAdditionalObjects `json:"additionalObjects,omitempty"`
 
-	UUID           string `json:"uuid,omitempty"`
-	Name           string `json:"name"`
-	ExtendedAccess string `json:"extendedAccess"`
+	UUID           string            `json:"uuid,omitempty"`
+	Name           string            `json:"name"`
+	Description    string            `json:"description,omitempty"`
+	ExtendedAccess string            `json:"extendedAccess"`
+	AuditConfig    *GroupAuditConfig `json:"auditConfig,omitempty"`
+
+	RotatingPasswordRequired  bool `json:"rotatingPasswordRequired,omitempty"`
+	RecordTrail               bool `json:"recordTrail,omitempty"`
+	PrivateGroup              bool `json:"privateGroup,omitempty"`
+	HideAuditTrail            bool `json:"hideAuditTrail,omitempty"`
+	ApplicationAdministration bool `json:"applicationAdministration,omitempty"`
+	Auditor                   bool `json:"auditor,omitempty"`
+	SingleManaged             bool `json:"singleManaged,omitempty"`
+
+	AuthorizingGroupProvisioning *Group `json:"authorizingGroupProvisioning,omitempty"`
+	AuthorizingGroupMembership   *Group `json:"authorizingGroupMembership,omitempty"`
+	AuthorizingGroupAuditing     *Group `json:"authorizingGroupAuditing,omitempty"`
+	NestedUnder                  *Group `json:"nestedUnder,omitempty"`
+	//Classification               string `json:"classification,omitempty"`               //group_GroupClassificationPrimer{...}
+	VaultRecovery string `json:"vaultRecovery,omitempty"`
+}
+
+func (g *Group) AddManager(account *Account) {
+
+	g.addGroupAccount(account, GROUP_RIGHT_MANAGER)
+
+}
+func (g *Group) AddMember(account *Account) {
+
+	g.addGroupAccount(account, GROUP_RIGHT_MEMBER)
+
+}
+
+func (g *Group) DisableExtendedAccess() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_NOT
+}
+func (g *Group) EnableExtendedAccess1W() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_1W
+}
+func (g *Group) EnableExtendedAccess2W() {
+	g.ExtendedAccess = GROUP_EXT_ACCESS_2W
+}
+
+func (g *Group) DisableVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_NONE
+}
+func (g *Group) KeyOnlyVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_KEY_ONLY
+}
+func (g *Group) FullVaultRecovery() {
+	g.VaultRecovery = VAULT_RECOVERY_FULL
+}
+
+func (g *Group) addGroupAccount(account *Account, groupRight string) {
+
+	// Check if additionalObjects is set
+	if g.AdditionalObjects == nil {
+		g.AdditionalObjects = &GroupAdditionalObjects{}
+	}
+
+	// Check if Admin list is set
+	if g.AdditionalObjects.Admins == nil {
+		g.AdditionalObjects.Admins = &GroupAccountList{DType: "LinkableWrapper"}
+	}
+
+	// Add account as Group Manager
+	g.AdditionalObjects.Admins.Items = append(g.AdditionalObjects.Admins.Items, *NewGroupAccount(account, groupRight))
+
 }
 
 type GroupAdditionalObjects struct {
@@ -37,12 +119,9 @@ func NewEmptyGroup(name string) (result *Group) {
 }
 
 func NewGroup(name string, groupadmin *Account) (result *Group) {
-	gal := GroupAccountList{DType: "LinkableWrapper"}
-	gra := NewGroupAccount(groupadmin, "MANAGER")
-	gal.Items = append(gal.Items, *gra)
-	gao := GroupAdditionalObjects{Admins: &gal}
-
-	result = &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED", AdditionalObjects: &gao}
+	result = NewEmptyGroup(name)
+	result.AuditConfig = NewGroupAuditConfig()
+	result.AddManager(groupadmin)
 	return
 }
 
@@ -50,6 +129,53 @@ func NewGroup(name string, groupadmin *Account) (result *Group) {
 type GroupAccountList struct {
 	DType string         `json:"$type,omitempty"`
 	Items []GroupAccount `json:"items"`
+}
+
+type GroupAuditConfig struct {
+	Linkable
+	DType             string         `json:"$type,omitempty"`
+	Months            MonthSelection `json:"months"`
+	Permissions       []string       `json:"permissions,omitempty"`
+	AdditionalObjects struct{}       `json:"additionalObjects,omitempty"`
+}
+
+func (gac *GroupAuditConfig) UnmarshalJSON(data []byte) error {
+
+	type Alias GroupAuditConfig
+	aux := &struct {
+		Months []string `json:"months"`
+		*Alias
+	}{
+		Alias: (*Alias)(gac),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	gac.Months.Enable(aux.Months...)
+
+	return nil
+}
+
+func (gac *GroupAuditConfig) MarshalJSON() ([]byte, error) {
+
+	type Alias GroupAuditConfig
+	aux := &struct {
+		Months []string `json:"months"`
+		*Alias
+	}{
+		Months: gac.Months.ToList(),
+		Alias:  (*Alias)(gac),
+	}
+
+	return json.Marshal(aux)
+}
+
+func NewGroupAuditConfig() *GroupAuditConfig {
+
+	gac := &GroupAuditConfig{DType: "group.GroupAuditConfig"}
+
+	return gac
+
 }
 
 type GroupAccount struct {
@@ -64,9 +190,12 @@ type GroupAccount struct {
 
 func NewGroupAccount(account *Account, rights string) *GroupAccount {
 	ga := &GroupAccount{Linkable: Linkable{DType: "group.GroupAccount"}, Rights: rights}
-	ga.Links = append(ga.Links, Link{ID: account.Links[0].ID, Rel: "self"})
-
+	ga.Links = append(ga.Links, Link{ID: account.Links[0].ID, Rel: "self", Type: "auth.AccountPrimer", Href: account.Links[0].Href})
+	ga.Username = account.Username
+	ga.DisplayName = account.DisplayName
+	ga.UUID = account.UUID
 	return ga
+
 }
 
 type GroupQueryParams struct {
