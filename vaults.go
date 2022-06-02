@@ -194,17 +194,6 @@ func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, a
 				fakegroup.Links[0].Href = matches[1]
 				fakegroup.Links[0].Rel = "self"
 				fakegroup.Links[0].ID = gid.Int64()
-				_ = fakegroup
-
-				/*
-					// The "good" way, make an extra call to retrieve the group
-					gs := newGroupService(s.sling)
-					group, err := gs.GetById(gid.Int64())
-					if err != nil {
-						err = fmt.Errorf("Could not retrieve group for VaultRecord. Error: %s", err.Error())
-					}
-					_ = group
-				*/
 
 				return s.GetByID(fakegroup, rid.Int64(), additional)
 			} else {
