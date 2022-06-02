@@ -17,7 +17,6 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 const (
@@ -152,7 +151,6 @@ func (gac *GroupAuditConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-	fmt.Println(aux.Months)
 	gac.Months.Enable(aux.Months...)
 
 	return nil
