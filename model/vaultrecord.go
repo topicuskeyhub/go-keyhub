@@ -121,7 +121,7 @@ type VaultRecordSearchQueryParams struct {
 	Exclude                      []string  `url:"exclude,omitempty"`
 	Q                            string    `url:"q,omitempty"`
 	Color                        string    `url:"color,omitempty"` // see below for color values
-	ExpireWarningBeforeOrAt      time.Time `url:"expireWarningBeforeOrAt,omitempty"`
+	ExpireWarningBeforeOrAt      time.Time `url:"expireWarningBeforeOrAt,omitempty" layout:"2006-01-02"`
 	Filename                     string    `url:"filename,omitempty"`
 	HasNoPolicy                  bool      `url:"hasNoPolicy,omitempty"`
 	HasParent                    bool      `url:"hasParent,omitempty"`
