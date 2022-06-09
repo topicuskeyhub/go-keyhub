@@ -115,13 +115,13 @@ type VaultRecordSearchQueryParams struct {
 	AccessibleByAccount          string    `url:"accessibleByAccount,omitempty"`
 	AccessibleByAccountAsManager string    `url:"accessibleByAccountAsManager,omitempty"`
 	Any                          bool      `url:"any,omitempty"`
-	CreatedAfter                 time.Time `json:"createdAfter,omitempty"`
-	CreatedBefore                time.Time `json:"createdBefore,omitempty"`
-	ModifiedSince                time.Time `json:"modifiedSince,omitempty"`
+	CreatedAfter                 time.Time `url:"createdAfter,omitempty"`
+	CreatedBefore                time.Time `url:"createdBefore,omitempty"`
+	ModifiedSince                time.Time `url:"modifiedSince,omitempty"`
 	Exclude                      []string  `url:"exclude,omitempty"`
-	Q                            string    `json:"q,omitempty"`
+	Q                            string    `url:"q,omitempty"`
 	Color                        string    `url:"color,omitempty"` // see below for color values
-	ExpireWarningBeforeOrAt      time.Time `url:"expireWarningBeforeOrAt"`
+	ExpireWarningBeforeOrAt      time.Time `url:"expireWarningBeforeOrAt,omitempty" layout:"2006-01-02"`
 	Filename                     string    `url:"filename,omitempty"`
 	HasNoPolicy                  bool      `url:"hasNoPolicy,omitempty"`
 	HasParent                    bool      `url:"hasParent,omitempty"`
