@@ -17,14 +17,13 @@ package keyhub
 
 import (
 	"fmt"
+	"github.com/dghubble/sling"
+	"github.com/google/uuid"
+	"github.com/topicuskeyhub/go-keyhub/model"
 	"math/big"
 	"net/url"
 	"regexp"
 	"strconv"
-
-	"github.com/dghubble/sling"
-	"github.com/google/uuid"
-	"github.com/topicuskeyhub/go-keyhub/model"
 )
 
 type VaultService struct {
@@ -89,18 +88,23 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 	}
 	query.Additional = additionalParams
 
-	_, err = s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(query).Receive(results, errorReport)
-	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get VaultRecords of Group %q. Error: %s", group.UUID, errorReport.Message)
-	}
-	if err == nil {
-		if len(results.Items) > 0 {
-			records = results.Items
-		} else {
-			records = []model.VaultRecord{}
-		}
-	}
+	searchRange := model.NewRange()
 
+	for ok := true; ok; ok = searchRange.NextPage() {
+
+		response, err := s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		searchRange.ParseResponse(response)
+
+		if errorReport.Code > 0 {
+			err = fmt.Errorf("Could not get VaultRecords of Group %q. Error: %s", group.UUID, errorReport.Message)
+		}
+		if err == nil {
+			if len(results.Items) > 0 {
+				records = append(records, results.Items...)
+			}
+		}
+
+	}
 	return
 }
 
