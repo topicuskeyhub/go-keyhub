@@ -47,6 +47,7 @@ func (r *Range) ParseResponse(response *http.Response) {
 	if response == nil {
 		// Reset to page 1
 		r.Setup(r.perpage)
+		return
 	}
 
 	matches := contentRangeRegex.FindStringSubmatch(response.Header.Get(HEADER_RESP_RANGE))
