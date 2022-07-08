@@ -177,6 +177,7 @@ func (c *ClientApplication) SetOAuth2SSO() error {
 	}
 	c.UseClientCredentials = false
 	c.SSOApplication = true
+	c.AddScope(CLIENT_SCOPE_PROFILE)
 	return nil
 }
 
