@@ -253,7 +253,12 @@ func (c *ClientApplication) GetSecret() (string, error) {
 	}
 
 	return c.AdditionalObjects.Secret.GeneratedSecret, nil
-
+}
+func (c *ClientApplication) GetSecretOrNil() *string {
+	if c.AdditionalObjects.Secret == nil {
+		return nil
+	}
+	return &c.AdditionalObjects.Secret.GeneratedSecret
 }
 
 type ClientList struct {
