@@ -111,9 +111,9 @@ type ClientApplicationPrimer struct {
 	Type clientApplicationType `json:"type,omitempty"`
 
 	// Shared
-	ClientId       string   `json:"clientId,omitempty"`         // OAuth: the clientId, Saml: The ClientApplication identifier
-	Scopes         []string `json:"scopes,omitempty,omitempty"` // Oauth SSO: required, Saml/Ldap: fixed to profile
-	SSOApplication bool     `json:"ssoApplication,omitempty"`   // Oauth SSO + Saml
+	ClientId       string   `json:"clientId,omitempty"`       // OAuth: the clientId, Saml: The ClientApplication identifier
+	Scopes         []string `json:"scopes,omitempty"`         // Oauth SSO: required, Saml/Ldap: fixed to profile
+	SSOApplication bool     `json:"ssoApplication,omitempty"` // Oauth SSO + Saml
 
 }
 
