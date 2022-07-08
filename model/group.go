@@ -110,8 +110,28 @@ func (g *Group) addGroupAccount(account *Account, groupRight string) {
 
 }
 
+func (g *Group) GrantClientPermission(client *ClientApplication, permission ...oauth2ClientPermissionValue) {
+
+	// Check if additionalObjects is set
+	if g.AdditionalObjects == nil {
+		g.AdditionalObjects = &GroupAdditionalObjects{}
+	}
+
+	// Check if ClientPermissionsWithClient list is set
+	if g.AdditionalObjects.ClientPermissions == nil {
+		g.AdditionalObjects.ClientPermissions = &ClientPermissionsWithClient{DType: "LinkableWrapper"}
+	}
+
+	// Add permission(s) for client
+	for _, perm := range permission {
+		g.AdditionalObjects.ClientPermissions.Items = append(g.AdditionalObjects.ClientPermissions.Items, NewClientPermissionWithClient(perm, client))
+	}
+
+}
+
 type GroupAdditionalObjects struct {
-	Admins *GroupAccountList `json:"admins,omitempty"`
+	Admins            *GroupAccountList            `json:"admins,omitempty"`
+	ClientPermissions *ClientPermissionsWithClient `json:"clientPermissions,omitempty"`
 }
 
 func NewEmptyGroup(name string) (result *Group) {

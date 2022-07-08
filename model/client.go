@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	CLIENT_TYPE_OAUTH2 = "OAUTH2"
-	CLIENT_TYPE_SAML2  = "SAML2"
-	CLIENT_TYPE_LDAP   = "LDAP"
+	CLIENT_TYPE_OAUTH2 clientApplicationType = "OAUTH2"
+	CLIENT_TYPE_SAML2  clientApplicationType = "SAML2"
+	CLIENT_TYPE_LDAP   clientApplicationType = "LDAP"
 
 	CLIENT_SCOPE_PROFILE        = "profile"
 	CLIENT_SCOPE_MANAGE_ACCOUNT = "manage_account"
@@ -22,28 +22,40 @@ const (
 	CLIENT_SUBJECT_FORMAT_UPN      = "UPN"
 	CLIENT_SUBJECT_FORMAT_USERNAME = "USERNAME"
 	CLIENT_SUBJECT_FORMAT_EMAIL    = "EMAIL"
+
+	CLIENT_PERM_ACCOUNTS_QUERY                        oauth2ClientPermissionValue = "ACCOUNTS_QUERY"
+	CLIENT_PERM_ACCOUNTS_REMOVE                       oauth2ClientPermissionValue = "ACCOUNTS_REMOVE"
+	CLIENT_PERM_GROUPONSYSTEM_CREATE                  oauth2ClientPermissionValue = "GROUPONSYSTEM_CREATE"
+	CLIENT_PERM_GROUPS_CREATE                         oauth2ClientPermissionValue = "GROUPS_CREATE"
+	CLIENT_PERM_GROUPS_VAULT_ACCESS_AFTER_CREATE      oauth2ClientPermissionValue = "GROUPS_VAULT_ACCESS_AFTER_CREATE"
+	CLIENT_PERM_GROUPS_GRANT_PERMISSIONS_AFTER_CREATE oauth2ClientPermissionValue = "GROUPS_GRANT_PERMISSIONS_AFTER_CREATE"
+	CLIENT_PERM_GROUPS_QUERY                          oauth2ClientPermissionValue = "GROUPS_QUERY"
+	CLIENT_PERM_GROUP_FULL_VAULT_ACCESS               oauth2ClientPermissionValue = "GROUP_FULL_VAULT_ACCESS"
+	CLIENT_PERM_GROUP_READ_CONTENTS                   oauth2ClientPermissionValue = "GROUP_READ_CONTENTS"
+	CLIENT_PERM_GROUP_SET_AUTHORIZATION               oauth2ClientPermissionValue = "GROUP_SET_AUTHORIZATION"
+	CLIENT_PERM_CLIENTS_CREATE                        oauth2ClientPermissionValue = "CLIENTS_CREATE"
+	CLIENT_PERM_CLIENTS_QUERY                         oauth2ClientPermissionValue = "CLIENTS_QUERY"
 )
 
-func NewOAuth2Client(name string, managerGroup *Group) *Client {
-	return newClient(name, managerGroup, CLIENT_TYPE_OAUTH2)
+func NewOAuth2Client(name string, managerGroup *Group) *ClientApplication {
+	return NewClientApplication(name, managerGroup, CLIENT_TYPE_OAUTH2)
 }
 
-func NewLdapClient(name string, managerGroup *Group) *Client {
-	return newClient(name, managerGroup, CLIENT_TYPE_LDAP)
+func NewLdapClient(name string, managerGroup *Group) *ClientApplication {
+	return NewClientApplication(name, managerGroup, CLIENT_TYPE_LDAP)
 }
 
-func NewSaml2Client(name string, managerGroup *Group) *Client {
-	return newClient(name, managerGroup, CLIENT_TYPE_SAML2)
+func NewSaml2Client(name string, managerGroup *Group) *ClientApplication {
+	return NewClientApplication(name, managerGroup, CLIENT_TYPE_SAML2)
 }
 
-func newClient(name string, managerGroup *Group, clienttype string) *Client {
+func NewClientApplication(name string, managerGroup *Group, clienttype clientApplicationType) *ClientApplication {
 
-	cl := &Client{
-		Name:                   name,
-		Type:                   clienttype,
-		Owner:                  managerGroup,
-		TechnicalAdministrator: managerGroup,
-	}
+	cl := &ClientApplication{}
+	cl.Name = name
+	cl.Type = clienttype
+	cl.Owner = managerGroup
+	cl.TechnicalAdministrator = managerGroup
 
 	cl.Attributes = make(map[string]string)
 
@@ -64,9 +76,12 @@ func newClient(name string, managerGroup *Group, clienttype string) *Client {
 
 }
 
+/** Enums **/
+type clientApplicationType string
+type oauth2ClientPermissionValue string
+
 type oauth2 struct {
 	Confidential         bool   `json:"confidential,omitempty"`         // Oauth
-	ClientId             string `json:"clientId,omitempty"`             // OAuth: the clientId, Saml: The Client identifier
 	UseClientCredentials bool   `json:"useClientCredentials,omitempty"` // OAuth Server2Server
 	CallbackURI          string `json:"callbackURI,omitempty"`          // OAuth SSO
 	InitiateLoginURI     string `json:"initiateLoginURI,omitempty"`     // OAuth SSO
@@ -88,17 +103,28 @@ type saml2 struct {
 	Segments      string `json:"segments,omitempty"`      // Saml
 }
 
-type Client struct {
+type ClientApplicationPrimer struct {
 	Linkable
+
+	UUID string                `json:"uuid,omitempty"`
+	Name string                `json:"name"`
+	Type clientApplicationType `json:"type,omitempty"`
+
+	// Shared
+	ClientId       string   `json:"clientId,omitempty"`         // OAuth: the clientId, Saml: The ClientApplication identifier
+	Scopes         []string `json:"scopes,omitempty,omitempty"` // Oauth SSO: required, Saml/Ldap: fixed to profile
+	SSOApplication bool     `json:"ssoApplication,omitempty"`   // Oauth SSO + Saml
+
+}
+
+type ClientApplication struct {
+	ClientApplicationPrimer
 
 	oauth2
 	ldap
 	saml2
 
-	UUID                   string                   `json:"uuid,omitempty"`
-	Name                   string                   `json:"name"`
 	URL                    string                   `json:"url,omitempty"`
-	Type                   string                   `json:"type,omitempty"`
 	Permissions            []Permission             `json:"permissions,omitempty"`
 	AdditionalObjects      *ClientAdditionalObjects `json:"additionalObjects,omitempty"`
 	LastModifiedAt         time.Time                `json:"lastModifiedAt,omitempty"`
@@ -106,35 +132,37 @@ type Client struct {
 	TechnicalAdministrator *Group                   `json:"technicalAdministrator,omitempty"`
 	DebugMode              bool                     `json:"debugMode,omitempty"`
 	AccountPermissions     []Permission             `json:"accountPermissions,omitempty"`
-	// Shared
-	ClientId       string            `json:"clientId,omitempty"`         // OAuth: the clientId, Saml: The Client identifier
-	Scopes         []string          `json:"scopes,omitempty,omitempty"` // Oauth SSO: required, Saml/Ldap: fixed to profile
-	SSOApplication bool              `json:"ssoApplication,omitempty"`   // Oauth SSO + Saml
-	Attributes     map[string]string `json:"attributes,omitempty"`       // OAuth SSO + Saml
+	Attributes             map[string]string        `json:"attributes,omitempty"` // OAuth SSO + Saml
 
 }
 
-func (c *Client) IsOAuth2Server2Server() bool {
+func (c *ClientApplication) IsOAuth2Server2Server() bool {
 	return c.Type == CLIENT_TYPE_OAUTH2 && c.UseClientCredentials == true
 }
 
-func (c *Client) IsOAuth2SSO() bool {
+func (c *ClientApplication) IsOAuth2SSO() bool {
 	return c.Type == CLIENT_TYPE_OAUTH2 && c.SSOApplication == true
 }
 
-func (c *Client) IsOAuth2() bool {
+func (c *ClientApplication) IsOAuth2() bool {
 	return c.Type == CLIENT_TYPE_OAUTH2
 }
 
-func (c *Client) IsSAML2() bool {
+func (c *ClientApplication) IsSAML2() bool {
 	return c.Type == CLIENT_TYPE_SAML2
 }
 
-func (c *Client) IsLDAP() bool {
+func (c *ClientApplication) IsLDAP() bool {
 	return c.Type == CLIENT_TYPE_LDAP
 }
 
-func (c *Client) SetOAuth2Server2Server() error {
+func (c *ClientApplication) AsPrimer() *ClientApplication {
+	x := ClientApplication{}
+	x.ClientApplicationPrimer = c.ClientApplicationPrimer
+	return &x
+}
+
+func (c *ClientApplication) SetOAuth2Server2Server() error {
 	if !c.IsOAuth2() {
 		return fmt.Errorf("client type is not an oauth2 type, can not set to server2server")
 	}
@@ -143,7 +171,7 @@ func (c *Client) SetOAuth2Server2Server() error {
 	return nil
 }
 
-func (c *Client) SetOAuth2SSO() error {
+func (c *ClientApplication) SetOAuth2SSO() error {
 	if !c.IsOAuth2() {
 		return fmt.Errorf("client type is not an oauth2 type, can not set to server2server")
 	}
@@ -152,7 +180,7 @@ func (c *Client) SetOAuth2SSO() error {
 	return nil
 }
 
-func (c *Client) AddAttribute(name, script string) error {
+func (c *ClientApplication) AddAttribute(name, script string) error {
 	if c.IsOAuth2SSO() == false && c.IsSAML2() == false {
 		return fmt.Errorf("current client type does not support Attributes. Type: %s", c.Type)
 	}
@@ -167,7 +195,7 @@ func (c *Client) AddAttribute(name, script string) error {
 	return nil
 }
 
-func (c *Client) RemoveAttribute(name, script string) error {
+func (c *ClientApplication) RemoveAttribute(name, script string) error {
 	if c.IsOAuth2SSO() == false && c.IsSAML2() == false {
 		return fmt.Errorf("current client type does not support Attributes")
 	}
@@ -182,7 +210,7 @@ func (c *Client) RemoveAttribute(name, script string) error {
 	return nil
 }
 
-func (c *Client) RemoveScope(scope string) error {
+func (c *ClientApplication) RemoveScope(scope string) error {
 	if !c.IsOAuth2SSO() {
 		return fmt.Errorf("current client type does not support Scopes")
 	}
@@ -198,7 +226,7 @@ func (c *Client) RemoveScope(scope string) error {
 	return nil
 }
 
-func (c *Client) AddScope(scope string) error {
+func (c *ClientApplication) AddScope(scope string) error {
 	if !c.IsOAuth2SSO() {
 		return fmt.Errorf("current client type '%s' does not support Scopes: %v", c.Type, c.IsOAuth2SSO())
 	}
@@ -218,21 +246,24 @@ func (c *Client) AddScope(scope string) error {
 	return nil
 }
 
-func (c *Client) GetSecret() (string, error) {
+func (c *ClientApplication) GetSecret() (string, error) {
 
 	if c.AdditionalObjects.Secret == nil {
 		return "", fmt.Errorf("secret is not available")
 	}
 
-	return string(*c.AdditionalObjects.Secret), nil
+	return c.AdditionalObjects.Secret.GeneratedSecret, nil
 
 }
 
 type ClientList struct {
-	Items []Client `json:"items"`
+	Items []ClientApplication `json:"items"`
 }
 
-type ClientSecret string
+type generatedSecret struct {
+	DType           string `json:"$type"`
+	GeneratedSecret string `json:"generatedSecret"`
+}
 
 type ClientQueryParams struct {
 	UUID       string   `url:"uuid,omitempty"`
@@ -241,10 +272,27 @@ type ClientQueryParams struct {
 
 type ClientAdditionalObjects struct {
 	Audit  *AuditAdditionalObject `json:"audit,omitempty"`
-	Secret *ClientSecret          `json:"secret,omitempty"`
+	Secret *generatedSecret       `json:"secret,omitempty"`
 }
 
-type ClientAttribute struct {
-	Name   string
-	Script string
+type OAuth2ClientPermissionList struct {
+	DType string                    `json:"$type,omitempty"`
+	Items []*OAuth2ClientPermission `json:"items"`
+}
+
+type OAuth2ClientPermission struct {
+	DType     string                      `json:"$type,omitempty"`
+	Value     oauth2ClientPermissionValue `json:"value,omitempty"`
+	ForSystem *ClientApplication          `json:"forSystem,omitempty"`
+	ForGroup  *Group                      `json:"forGroup,omitempty"`
+}
+
+func NewOAuth2ClientPermission(perm oauth2ClientPermissionValue, group *Group) *OAuth2ClientPermission {
+
+	cp := &OAuth2ClientPermission{}
+	cp.DType = "client.OAuth2ClientPermission"
+	cp.Value = perm
+	cp.ForGroup = group
+
+	return cp
 }

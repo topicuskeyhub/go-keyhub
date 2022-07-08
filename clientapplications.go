@@ -24,19 +24,19 @@ import (
 	"github.com/topicuskeyhub/go-keyhub/model"
 )
 
-// ClientService Service to manage client application configurations in keyhub
-type ClientService struct {
+// ClientApplicationService Service to manage client application configurations in keyhub
+type ClientApplicationService struct {
 	sling *sling.Sling
 }
 
-func newClientService(sling *sling.Sling) *ClientService {
-	return &ClientService{
+func newClientApplicationService(sling *sling.Sling) *ClientApplicationService {
+	return &ClientApplicationService{
 		sling: sling.Path("/keyhub/rest/v1/client/"),
 	}
 }
 
 // Create a new client application in Keyhub
-func (s *ClientService) Create(client *model.Client) (result *model.Client, err error) {
+func (s *ClientApplicationService) Create(client *model.ClientApplication) (result *model.ClientApplication, err error) {
 	clients := new(model.ClientList)
 	results := new(model.ClientList)
 	errorReport := new(model.ErrorReport)
@@ -44,13 +44,13 @@ func (s *ClientService) Create(client *model.Client) (result *model.Client, err 
 
 	_, err = s.sling.New().Post("").BodyJSON(clients).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create Client. Error: %s", errorReport.Message)
+		err = fmt.Errorf("Could not create ClientApplication. Error: %s", errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
 			result = &results.Items[0]
 		} else {
-			err = fmt.Errorf("Created Client not found")
+			err = fmt.Errorf("Created ClientApplication not found")
 		}
 	}
 
@@ -58,19 +58,19 @@ func (s *ClientService) Create(client *model.Client) (result *model.Client, err 
 }
 
 // List all available clients.
-func (s *ClientService) List() (clients []model.Client, err error) {
+func (s *ClientApplicationService) List() (clients []model.ClientApplication, err error) {
 	results := new(model.ClientList)
 	errorReport := new(model.ErrorReport)
 
 	_, err = s.sling.New().Get("").Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Clients. Error: %s", errorReport.Message)
+		err = fmt.Errorf("Could not get ClientApplications. Error: %s", errorReport.Message)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
 			clients = results.Items
 		} else {
-			clients = []model.Client{}
+			clients = []model.ClientApplication{}
 		}
 	}
 
@@ -78,7 +78,7 @@ func (s *ClientService) List() (clients []model.Client, err error) {
 }
 
 // GetByUUID Retrieve a client by uuid
-func (s *ClientService) GetByUUID(uuid uuid.UUID) (result *model.Client, err error) {
+func (s *ClientApplicationService) GetByUUID(uuid uuid.UUID) (result *model.ClientApplication, err error) {
 	al := new(model.ClientList)
 	errorReport := new(model.ErrorReport)
 
@@ -86,13 +86,13 @@ func (s *ClientService) GetByUUID(uuid uuid.UUID) (result *model.Client, err err
 	params.Additional = []string{"secret", "audit"}
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Client %q. Error: %s", uuid, errorReport.Message)
+		err = fmt.Errorf("Could not get ClientApplication %q. Error: %s", uuid, errorReport.Message)
 	}
 	if err == nil {
 		if len(al.Items) > 0 {
 			result = &al.Items[0]
 		} else {
-			err = fmt.Errorf("Client %q not found", uuid.String())
+			err = fmt.Errorf("ClientApplication %q not found", uuid.String())
 		}
 	}
 
@@ -100,18 +100,18 @@ func (s *ClientService) GetByUUID(uuid uuid.UUID) (result *model.Client, err err
 }
 
 // GetById Retrieve a client by keyhub id
-func (s *ClientService) GetById(id int64) (result *model.Client, err error) {
-	al := new(model.Client)
+func (s *ClientApplicationService) GetById(id int64) (result *model.ClientApplication, err error) {
+	al := new(model.ClientApplication)
 	errorReport := new(model.ErrorReport)
 	idString := strconv.FormatInt(id, 10)
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Client %q. Error: %s", idString, errorReport.Message)
+		err = fmt.Errorf("Could not get ClientApplication %q. Error: %s", idString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
-		err = fmt.Errorf("Client %q not found", idString)
+		err = fmt.Errorf("ClientApplication %q not found", idString)
 		return
 	}
 
