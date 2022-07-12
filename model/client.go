@@ -63,6 +63,7 @@ func NewClientApplication(name string, managerGroup *Group, clienttype clientApp
 	case CLIENT_TYPE_OAUTH2:
 		cl.DType = "client.OAuth2Client"
 		cl.Confidential = true
+		cl.SetOAuth2SSO()
 	case CLIENT_TYPE_LDAP:
 		cl.DType = "client.LdapClient"
 		cl.ClientCertificate = nil
