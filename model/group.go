@@ -36,14 +36,21 @@ type GroupList struct {
 	Items []Group `json:"items"`
 }
 
-type Group struct {
+type GroupPrimer struct {
 	Linkable
+	Admin bool `json:"admin,omitempty"`
+
+	UUID string `json:"uuid,omitempty"`
+	Name string `json:"name"`
+}
+
+type Group struct {
+	GroupPrimer
+
 	AdditionalObjects *GroupAdditionalObjects `json:"additionalObjects,omitempty"`
 
-	UUID           string            `json:"uuid,omitempty"`
-	Name           string            `json:"name"`
 	Description    string            `json:"description,omitempty"`
-	ExtendedAccess string            `json:"extendedAccess"`
+	ExtendedAccess string            `json:"extendedAccess,omitempty"`
 	AuditConfig    *GroupAuditConfig `json:"auditConfig,omitempty"`
 
 	RotatingPasswordRequired  bool `json:"rotatingPasswordRequired,omitempty"`
@@ -70,6 +77,14 @@ func (g *Group) AddManager(account *Account) {
 func (g *Group) AddMember(account *Account) {
 
 	g.addGroupAccount(account, GROUP_RIGHT_MEMBER)
+
+}
+
+func (g *Group) AsPrimer() *Group {
+
+	group := &Group{}
+	group.GroupPrimer = g.GroupPrimer
+	return group
 
 }
 
@@ -115,7 +130,7 @@ type GroupAdditionalObjects struct {
 }
 
 func NewEmptyGroup(name string) (result *Group) {
-	return &Group{Linkable: Linkable{DType: "group.Group"}, Name: name, ExtendedAccess: "NOT_ALLOWED"}
+	return &Group{GroupPrimer: GroupPrimer{Linkable: Linkable{DType: "group.Group"}, Name: name}, ExtendedAccess: "NOT_ALLOWED"}
 }
 
 func NewGroup(name string, groupadmin *Account) (result *Group) {
