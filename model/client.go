@@ -37,15 +37,15 @@ const (
 	CLIENT_PERM_CLIENTS_QUERY                         oauth2ClientPermissionValue = "CLIENTS_QUERY"
 )
 
-func NewOAuth2Client(name string, managerGroup *Group) *ClientApplication {
+func NewOAuth2ClientApplication(name string, managerGroup *Group) *ClientApplication {
 	return NewClientApplication(name, managerGroup, CLIENT_TYPE_OAUTH2)
 }
 
-func NewLdapClient(name string, managerGroup *Group) *ClientApplication {
+func NewLdapClientApplication(name string, managerGroup *Group) *ClientApplication {
 	return NewClientApplication(name, managerGroup, CLIENT_TYPE_LDAP)
 }
 
-func NewSaml2Client(name string, managerGroup *Group) *ClientApplication {
+func NewSaml2ClientApplication(name string, managerGroup *Group) *ClientApplication {
 	return NewClientApplication(name, managerGroup, CLIENT_TYPE_SAML2)
 }
 
