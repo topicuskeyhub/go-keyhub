@@ -98,9 +98,10 @@ func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
 
-	additional := []string{}
-	additional = append(additional, "admins")
-	params := &model.GroupQueryParams{UUID: uuid.String(), Additional: additional}
+	params := &model.GroupQueryParams{
+		UUID:       uuid.String(),
+		Additional: &model.GroupAdditionalQueryParams{Admins: true},
+	}
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
 
@@ -123,9 +124,9 @@ func (s *GroupService) GetById(id int64) (result *model.Group, err error) {
 	errorReport := new(model.ErrorReport)
 	idString := strconv.FormatInt(id, 10)
 
-	additional := []string{}
-	additional = append(additional, "admins")
-	params := &model.GroupQueryParams{Additional: additional}
+	params := &model.GroupQueryParams{
+		Additional: &model.GroupAdditionalQueryParams{Admins: true},
+	}
 
 	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {

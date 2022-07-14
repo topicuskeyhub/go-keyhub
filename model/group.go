@@ -17,6 +17,7 @@ package model
 
 import (
 	"encoding/json"
+	"net/url"
 )
 
 const (
@@ -214,6 +215,15 @@ func NewGroupAccount(account *Account, rights string) *GroupAccount {
 }
 
 type GroupQueryParams struct {
-	UUID       string   `url:"uuid,omitempty"`
-	Additional []string `url:"additional,omitempty"`
+	UUID       string                      `url:"uuid,omitempty"`
+	Additional *GroupAdditionalQueryParams `url:"additional,omitempty"`
+}
+
+type GroupAdditionalQueryParams struct {
+	Audit  bool `url:"audit"`
+	Admins bool `url:"admins"`
+}
+
+func (p GroupAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
+	return additionalQueryParamsUrlEncoder(p, key, v)
 }
