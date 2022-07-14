@@ -227,3 +227,21 @@ type GroupAdditionalQueryParams struct {
 func (p GroupAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
 	return additionalQueryParamsUrlEncoder(p, key, v)
 }
+
+const (
+	PRGRP_SECURITY_LEVEL_LOW    ProvisioningGroupSecurityLevel = "LOW"
+	PRGRP_SECURITY_LEVEL_MEDIUM ProvisioningGroupSecurityLevel = "MEDIUM"
+	PRGRP_SECURITY_LEVEL_HIGH   ProvisioningGroupSecurityLevel = "HIGH"
+)
+
+// Section: Group
+type ProvisioningGroup struct {
+	Linkable
+
+	GroupOnSystem      *GroupOnSystem                  `json:"groupOnSystem,omitempty"`
+	Group              *GroupPrimer                    `json:"group"`
+	SecurityLevel      *ProvisioningGroupSecurityLevel `json:"securityLevel"`
+	StaticProvisioning bool                            `json:"staticProvisioning"`
+}
+
+type ProvisioningGroupSecurityLevel string
