@@ -137,7 +137,7 @@ func (s *SystemService) DeleteGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 
 	var result interface{}
 
-	_, err = s.sling.New().Delete(groupId+"/group/"+gosId).QueryStruct(params).ResponseDecoder(&DebugResponseDecoder{}).Receive(result, errorReport)
+	_, err = s.sling.New().Delete(groupId+"/group/"+gosId).QueryStruct(params).Receive(result, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("could not delete GroupOnSystem. Error: %s", errorReport.Message)
 	}

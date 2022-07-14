@@ -1,7 +1,10 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
@@ -37,5 +40,23 @@ func additionalQueryParamsUrlEncoder(additionalQueryParams interface{}, key stri
 	}
 
 	return nil
+
+}
+
+// DebugResponseDecoder Usage sling.ResponseDecoder(&model.DebugResponseDecoder{})......
+type DebugResponseDecoder struct {
+}
+
+// Decode Print raw body while unmarshalling json Body
+func (drd *DebugResponseDecoder) Decode(resp *http.Response, v interface{}) error {
+
+	var err error
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Raw json response: %s \n", body)
+	err = json.Unmarshal(body, &v)
+	return err
 
 }
