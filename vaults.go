@@ -42,12 +42,12 @@ func (s *VaultService) Create(group *model.Group, vaultRecord *model.VaultRecord
 	errorReport := new(model.ErrorReport)
 	vaultRecords.Items = append(vaultRecords.Items, *vaultRecord)
 
-	url, _ := url.Parse(group.Self().Href)
-	additional := []string{}
-	additional = append(additional, "secret")
-	params := &model.VaultRecordQueryParams{Additional: additional}
+	selfUrl, _ := url.Parse(group.Self().Href)
+	params := &model.VaultRecordQueryParams{
+		Additional: &model.VaultRecordAdditionalQueryParams{Secret: true},
+	}
 
-	_, err = s.sling.New().Path(url.Path+"/vault/").Post("record").QueryStruct(params).BodyJSON(vaultRecords).Receive(results, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Post("record").QueryStruct(params).BodyJSON(vaultRecords).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not create VaultRecord in Group %q. Error: %s", group.UUID, errorReport.Message)
 	}
@@ -73,26 +73,22 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 
-	url, _ := url.Parse(group.Self().Href)
+	selfUrl, _ := url.Parse(group.Self().Href)
 
 	if query == nil {
 		query = &model.VaultRecordQueryParams{}
 	}
-	if additional == nil {
-		additional = &model.VaultRecordAdditionalQueryParams{Audit: true}
+	if additional != nil {
+		query.Additional = additional
+	} else if query.Additional == nil {
+		query.Additional = &model.VaultRecordAdditionalQueryParams{Audit: true}
 	}
-
-	additionalParams := []string{}
-	if additional.Audit {
-		additionalParams = append(additionalParams, "audit")
-	}
-	query.Additional = additionalParams
 
 	searchRange := model.NewRange()
 
 	for ok := true; ok; ok = searchRange.NextPage() {
 
-		response, err := s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		response, err := s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
@@ -218,23 +214,15 @@ func (s *VaultService) GetByUUID(group *model.Group, uuid uuid.UUID, additional 
 	results := new(model.VaultRecordList)
 	errorReport := new(model.ErrorReport)
 
-	url, _ := url.Parse(group.Self().Href)
+	selfUrl, _ := url.Parse(group.Self().Href)
 
 	query := &model.VaultRecordQueryParams{UUID: uuid.String()}
 	if additional == nil {
 		additional = &model.VaultRecordAdditionalQueryParams{Audit: true}
 	}
+	query.Additional = additional
 
-	additionalParams := []string{}
-	if additional.Audit {
-		additionalParams = append(additionalParams, "audit")
-	}
-	if additional.Secret {
-		additionalParams = append(additionalParams, "secret")
-	}
-	query.Additional = additionalParams
-
-	_, err = s.sling.New().Path(url.Path+"/vault/").Get("record").QueryStruct(query).Receive(results, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not get VaultRecord %q of Group %q. Error: %s", uuid.String(), group.UUID, errorReport.Message)
 	}
@@ -255,23 +243,15 @@ func (s *VaultService) GetByID(group *model.Group, id int64, additional *model.V
 	errorReport := new(model.ErrorReport)
 	idString := strconv.FormatInt(id, 10)
 
-	url, _ := url.Parse(group.Self().Href)
+	selfUrl, _ := url.Parse(group.Self().Href)
 
 	query := &model.VaultRecordQueryParams{}
 	if additional == nil {
 		additional = &model.VaultRecordAdditionalQueryParams{Audit: true}
 	}
+	query.Additional = additional
 
-	additionalParams := []string{}
-	if additional.Audit {
-		additionalParams = append(additionalParams, "audit")
-	}
-	if additional.Secret {
-		additionalParams = append(additionalParams, "secret")
-	}
-	query.Additional = additionalParams
-
-	_, err = s.sling.New().Path(url.Path+"/vault/record/").Get(idString).QueryStruct(query).Receive(al, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path+"/vault/record/").Get(idString).QueryStruct(query).Receive(al, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not get VaultRecord %q of Group %q. Error: %s", idString, group.UUID, errorReport.Message)
 		return
@@ -291,19 +271,20 @@ func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord
 	al := new(model.VaultRecord)
 	errorReport := new(model.ErrorReport)
 
-	url, _ := url.Parse(vaultRecord.Self().Href)
+	selfUrl, _ := url.Parse(vaultRecord.Self().Href)
 
-	query := &model.VaultRecordQueryParams{}
-	additionalParams := []string{}
-	additionalParams = append(additionalParams, "audit")
-	additionalParams = append(additionalParams, "secret")
-	query.Additional = additionalParams
+	query := &model.VaultRecordQueryParams{
+		Additional: &model.VaultRecordAdditionalQueryParams{
+			Audit:  true,
+			Secret: true,
+		},
+	}
 
 	if vaultRecord.AdditionalObjects.Audit != nil {
 		vaultRecord.AdditionalObjects.Audit = nil
 	}
 
-	_, err = s.sling.New().Path(url.Path).Put("").BodyJSON(vaultRecord).QueryStruct(query).Receive(al, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path).Put("").BodyJSON(vaultRecord).QueryStruct(query).Receive(al, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not update VaultRecord %q of Group %q. Error: %s", vaultRecord.UUID, group.UUID, errorReport.Message)
 		return
@@ -323,9 +304,9 @@ func (s *VaultService) DeleteByUUID(group *model.Group, uuid uuid.UUID) (err err
 		return err
 	}
 
-	url, _ := url.Parse(vaultRecord.Self().Href)
+	selfUrl, _ := url.Parse(vaultRecord.Self().Href)
 
-	_, err = s.sling.New().Path(url.Path).Delete("").Receive(nil, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path).Delete("").Receive(nil, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not delete VaultRecord %q of Group %q. Error: %s", uuid.String(), group.UUID, errorReport.Message)
 	}
@@ -336,10 +317,10 @@ func (s *VaultService) DeleteByUUID(group *model.Group, uuid uuid.UUID) (err err
 //DeleteByID  Delete a vault record by ID for a certain group, including audit and secrets
 func (s *VaultService) DeleteByID(group *model.Group, id int64) (err error) {
 	errorReport := new(model.ErrorReport)
-	url, _ := url.Parse(group.Self().Href)
+	selfUrl, _ := url.Parse(group.Self().Href)
 	idString := strconv.FormatInt(id, 10)
 
-	_, err = s.sling.New().Path(url.Path+"/vault/record/").Delete(idString).Receive(nil, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path+"/vault/record/").Delete(idString).Receive(nil, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not delete VaultRecord %q of Group %q. Error: %s", idString, group.UUID, errorReport.Message)
 	}
