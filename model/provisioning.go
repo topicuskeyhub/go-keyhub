@@ -1,5 +1,7 @@
 package model
 
+// Section: provisioning
+
 import (
 	"github.com/gosimple/slug"
 	"net/url"
@@ -24,13 +26,26 @@ const (
 	PSYSTEM_TYPE_INTERNAL_LDAP                    ProvisionedSystemType = "INTERNAL_LDAP"
 )
 
+// GroupOnSystemType Use constants as enum for type
 type GroupOnSystemType string
+
+// ProvisionedSystemType Use constants as enum for type
 type ProvisionedSystemType string
 
-// Section: provisioning
+// NewGroupOnSystemList Initialize a new GroupOnSystemList
+func NewGroupOnSystemList() *GroupOnSystemList {
+	return &GroupOnSystemList{
+		DType: "LinkableWrapper",
+	}
+}
+
+// GroupOnSystemList List of GroupOnSystems
 type GroupOnSystemList struct {
+	DType string          `json:"$type,omitempty"`
 	Items []GroupOnSystem `json:"items"`
 }
+
+// GroupOnSystem Group On System object
 type GroupOnSystem struct {
 	Linkable
 
@@ -41,48 +56,73 @@ type GroupOnSystem struct {
 	System            *ProvisionedSystem `json:"system,omitempty"`
 	Owner             *Group             `json:"owner,omitempty"`
 
-	AdditionalObject *GroupOnSystemAdditionalObject `json:"additionalObject,omitempty"`
+	AdditionalObjects *GroupOnSystemAdditionalObject `json:"additionalObjects,omitempty"`
 }
 
+// NewProvisioningGroupList Initialize a new ProvisioningGroupList
+func NewProvisioningGroupList() *ProvisioningGroupList {
+	return &ProvisioningGroupList{
+		DType: "LinkableWrapper",
+	}
+}
+
+// ProvisioningGroupList List of ProvisioningGroup
+type ProvisioningGroupList struct {
+	DType string              `json:"$type,omitempty"`
+	Items []ProvisioningGroup `json:"items,omitempty"`
+}
+
+// NewGroupOnSystemAdditionalObject Initialize a new GroupOnSystemAdditionalObject
+func NewGroupOnSystemAdditionalObject() *GroupOnSystemAdditionalObject {
+	return &GroupOnSystemAdditionalObject{
+		ProvGroups: NewProvisioningGroupList(),
+	}
+}
+
+// GroupOnSystemAdditionalObject Additional objects for GroupOnSystem
 type GroupOnSystemAdditionalObject struct {
-	ProvGroups struct {
-		Items []ProvisioningGroup `json:"items,omitempty"`
-	} `json:"provgroups,omitempty"`
+	ProvGroups *ProvisioningGroupList `json:"provgroups,omitempty"`
 }
 
+// AddProvGroup Add Additional ProvisioningGroup
 func (g *GroupOnSystem) AddProvGroup(group ...ProvisioningGroup) {
 
-	if g.AdditionalObject == nil {
-		g.AdditionalObject = &GroupOnSystemAdditionalObject{}
+	if g.AdditionalObjects == nil {
+		g.AdditionalObjects = NewGroupOnSystemAdditionalObject()
 	}
-	g.AdditionalObject.ProvGroups.Items = append(g.AdditionalObject.ProvGroups.Items, group...)
+	g.AdditionalObjects.ProvGroups.Items = append(
+		g.AdditionalObjects.ProvGroups.Items,
+		group...,
+	)
 }
 
+// SetType Set type of GroupOnSystem, use one of the GOS_TYPE_* constants
 func (g *GroupOnSystem) SetType(typename GroupOnSystemType) {
 	g.Type = typename
+
 }
 
+// SetName Set DisplayName and NameInSystem from name given, NameInSystem is slugified
 func (g *GroupOnSystem) SetName(name string) {
 	g.DisplayName = name
 	g.NameInSystem = slug.Make(name)
 }
 
+// NewGroupOnSystem Initialize a new GroupOnSystem
 func NewGroupOnSystem() *GroupOnSystem {
 	return &GroupOnSystem{
 		Linkable: Linkable{DType: "provisioning.GroupOnSystem"},
 	}
 }
 
-// Section: provisioning
-
+// NewProvisionedSystem Initialize a new ProvisionedSystem
 func NewProvisionedSystem() *ProvisionedSystem {
-
 	ps := &ProvisionedSystem{}
 	ps.Linkable = Linkable{DType: "provisioning.ProvisionedSystem"}
-
 	return ps
 }
 
+// ProvisionedSystemPrimer Primer Class for ProvisionedSystem
 type ProvisionedSystemPrimer struct {
 	Linkable
 	Active bool                  `json:"active,omitempty"`
@@ -91,27 +131,7 @@ type ProvisionedSystemPrimer struct {
 	Type   ProvisionedSystemType `json:"type,omitempty"`
 }
 
-type ProvisionedSystem struct {
-	ProvisionedSystemPrimer
-
-	ProvisionedAbstract
-
-	AccountCount           int
-	UsernamePrefix         string `json:"usernamePrefix,omitempty"`
-	TechnicalAdministrator *Group `json:"technicalAdministrator,omitempty"`
-	ExternalUUID           string `json:"externalUUID,omitempty"`
-}
-
-func (p *ProvisionedSystem) AsPrimer() *ProvisionedSystem {
-	system := &ProvisionedSystem{}
-	system.ProvisionedSystemPrimer = p.ProvisionedSystemPrimer
-	return system
-}
-
-type ProvisionedSystemList struct {
-	Items []ProvisionedSystem `json:"items,omitempty"`
-}
-
+// ProvisionedAbstract Base parameters for ProvisionedSystems
 type ProvisionedAbstract struct {
 	Host                       string       `json:"host,omitempty"`
 	Port                       int          `json:"port,omitempty"`
@@ -130,6 +150,45 @@ type ProvisionedAbstract struct {
 	Attributes                 interface{}  `json:"attributes,omitempty"`
 }
 
+// ProvisionedSystem Generic ProvisionedSystem Class
+type ProvisionedSystem struct {
+	ProvisionedSystemPrimer
+
+	ProvisionedAbstract
+
+	AccountCount           int
+	UsernamePrefix         string `json:"usernamePrefix,omitempty"`
+	TechnicalAdministrator *Group `json:"technicalAdministrator,omitempty"`
+	ExternalUUID           string `json:"externalUUID,omitempty"`
+}
+
+// AsPrimer Return ProvisionedSystem with only Primer data
+func (p *ProvisionedSystem) AsPrimer() *ProvisionedSystem {
+	system := &ProvisionedSystem{}
+	system.ProvisionedSystemPrimer = p.ProvisionedSystemPrimer
+	return system
+}
+
+// AsPrimer Convert to ProvisionedSystemPrimer
+func (p *ProvisionedSystem) ToPrimer() *ProvisionedSystemPrimer {
+	primer := p.ProvisionedSystemPrimer
+	return &primer
+}
+
+// NewProvisionedSystemList Initialize a new ProvisionedSystemList
+func NewProvisionedSystemList() *ProvisionedSystemList {
+	return &ProvisionedSystemList{
+		DType: "LinkableWrapper",
+	}
+}
+
+// ProvisionedSystemList list of ProvisionedSystem
+type ProvisionedSystemList struct {
+	DType string              `json:"$type,omitempty"`
+	Items []ProvisionedSystem `json:"items,omitempty"`
+}
+
+// ProvisionedAD Additional Parameters for specific ProvisionedSystem type
 type ProvisionedAD struct {
 	//provisioning.ProvisionedAD
 	SamAccountNameScheme string `json:"samAccountNameScheme,omitempty"`
@@ -140,11 +199,14 @@ type ProvisionedAD struct {
 	//"USERNAME"
 }
 
+// ProvisionedLDAPDirectory Additional Parameters for specific ProvisionedSystem type
 type ProvisionedLDAPDirectory struct {
 	//provisioning.ProvisionedLDAPDirectory
 	Directory interface{} `json:"directory,omitempty"` // directory_AccountDirectoryPrimer
 	GroupDN   string      `json:"groupDN,omitempty"`
 }
+
+// ProvisionedAzureTenant Additional Parameters for specific ProvisionedSystem type
 type ProvisionedAzureTenant struct {
 	//provisioning.ProvisionedAzureTenant
 	ClientId     string `json:"clientId,omitempty"`
@@ -153,11 +215,13 @@ type ProvisionedAzureTenant struct {
 	IdpDomain    string `json:"idpDomain,omitempty"`
 }
 
+// ProvisionedInternalLDAP Additional Parameters for specific ProvisionedSystem type
 type ProvisionedInternalLDAP struct {
 	//provisioning.ProvisionedInternalLDAP
 	Client interface{} `json:"client,omitempty"` // client_ldapClient
 }
 
+// ProvisionedLDAP Additional Parameters for specific ProvisionedSystem type
 type ProvisionedLDAP struct {
 	//provisioning.ProvisionedLDAP
 	GID           int         `json:"gid,omitempty"`
@@ -165,6 +229,7 @@ type ProvisionedLDAP struct {
 	Numbering     interface{} `json:"numbering,omitempty"` // provisioning_ProvisionNumberSequence
 }
 
+// ProvisionedAzureSyncLDAPDirectory Additional Parameters for specific ProvisionedSystem type
 type ProvisionedAzureSyncLDAPDirectory struct {
 	//provisioning.ProvisionedAzureSyncLDAPDirectory
 	ClientId     string      `json:"clientId,omitempty"`
@@ -173,21 +238,25 @@ type ProvisionedAzureSyncLDAPDirectory struct {
 	Directory    interface{} `json:"directory,omitempty"` // directory_AccountDirectoryPrimer
 }
 
+// ProvisionedAzureOIDCDirectory Additional Parameters for specific ProvisionedSystem type
 type ProvisionedAzureOIDCDirectory struct {
 	//provisioning.ProvisionedAzureOIDCDirectory
 	Tenant    string      `json:"tenant,omitempty"`
 	Directory interface{} `json:"directory,omitempty"` // directory_AccountDirectoryPrimer
 }
 
+// ProvisionedAccount Placeholder
 type ProvisionedAccount struct {
 	Account
 
 	UId int `json:"uid,omitempty"` //ReadOnly
 }
 
+// Certificate Placeholder
 type Certificate struct {
 }
 
+// GroupOnSystemQueryParams Query Parameters for Search GroupOnSystem
 type GroupOnSystemQueryParams struct {
 	Id                 []int64   `url:"id,omitempty"`
 	GroupIds           []int64   `url:"group,omitempty"`
@@ -204,6 +273,7 @@ type GroupOnSystemQueryParams struct {
 	Additional *GroupOnSystemAdditionalQueryParams `url:"additional"`
 }
 
+// AddGroup extract id from given group and add to group ids to search for
 func (g *GroupOnSystemQueryParams) AddGroup(group *Group) {
 	if group != nil {
 		if group.Self().ID > 0 {
@@ -212,6 +282,7 @@ func (g *GroupOnSystemQueryParams) AddGroup(group *Group) {
 	}
 }
 
+// AddId extract id from given grouponsystem and add to id's to search for
 func (g *GroupOnSystemQueryParams) AddId(gos *GroupOnSystem) {
 	if gos != nil {
 		if gos.Self().ID > 0 {
@@ -219,6 +290,8 @@ func (g *GroupOnSystemQueryParams) AddId(gos *GroupOnSystem) {
 		}
 	}
 }
+
+// AddExcludeId extract id from given grouponsystem and add as group id to exclude in search
 func (g *GroupOnSystemQueryParams) AddExcludeId(gos *GroupOnSystem) {
 	if gos != nil {
 		if gos.Self().ID > 0 {
@@ -226,6 +299,8 @@ func (g *GroupOnSystemQueryParams) AddExcludeId(gos *GroupOnSystem) {
 		}
 	}
 }
+
+// AddNotLinkedToGroup extract id from given group and add as group id to exclude if linked to
 func (g *GroupOnSystemQueryParams) AddNotLinkedToGroup(group *Group) {
 	if group != nil {
 		if group.Self().ID > 0 {
@@ -233,6 +308,8 @@ func (g *GroupOnSystemQueryParams) AddNotLinkedToGroup(group *Group) {
 		}
 	}
 }
+
+// SetAdminnedByGroup extract id from given group and add as AdminnedBy filter
 func (g *GroupOnSystemQueryParams) SetAdminnedByGroup(group *Group) {
 	if group != nil {
 		if group.Self().ID > 0 {
@@ -243,6 +320,7 @@ func (g *GroupOnSystemQueryParams) SetAdminnedByGroup(group *Group) {
 	}
 }
 
+// SetOwnedByGroup extract id from given group and add ad OwnedByGroup filter
 func (g *GroupOnSystemQueryParams) SetOwnedByGroup(group *Group) {
 	if group != nil {
 		if group.Self().ID > 0 {
@@ -253,11 +331,13 @@ func (g *GroupOnSystemQueryParams) SetOwnedByGroup(group *Group) {
 	}
 }
 
+// GroupOnSystemAdditionalQueryParams AdditionalQueryParameters
 type GroupOnSystemAdditionalQueryParams struct {
 	Audit      bool `url:"audit"`
 	ProvGroups bool `url:"provgroups"`
 }
 
+// EncodeValues Custom url encoder to convert bools to list
 func (p GroupOnSystemAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
 	return additionalQueryParamsUrlEncoder(p, key, v)
 }

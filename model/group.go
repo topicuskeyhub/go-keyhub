@@ -70,23 +70,28 @@ type Group struct {
 	VaultRecovery string `json:"vaultRecovery,omitempty"`
 }
 
+// AddManager Add Account as Manager
 func (g *Group) AddManager(account *Account) {
-
 	g.addGroupAccount(account, GROUP_RIGHT_MANAGER)
-
 }
+
+// AddMember Add Account as Member
 func (g *Group) AddMember(account *Account) {
-
 	g.addGroupAccount(account, GROUP_RIGHT_MEMBER)
-
 }
 
+// AsPrimer Return Group with only Primer data
 func (g *Group) AsPrimer() *Group {
-
 	group := &Group{}
 	group.GroupPrimer = g.GroupPrimer
 	return group
+}
 
+// ToPrimer Convert to GroupPrimer
+func (g *Group) ToPrimer() *GroupPrimer {
+	groupPrimer := GroupPrimer{}
+	groupPrimer = g.GroupPrimer
+	return &groupPrimer
 }
 
 func (g *Group) DisableExtendedAccess() {
@@ -224,6 +229,7 @@ type GroupAdditionalQueryParams struct {
 	Admins bool `url:"admins"`
 }
 
+// EncodeValues Custom url encoder to convert bools to list
 func (p GroupAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
 	return additionalQueryParamsUrlEncoder(p, key, v)
 }
@@ -235,13 +241,26 @@ const (
 )
 
 // Section: Group
+func NewProvisioningGroup() *ProvisioningGroup {
+
+	pg := ProvisioningGroup{
+		Linkable: Linkable{
+			DType: "group.ProvisioningGroup",
+		},
+		SecurityLevel:      PRGRP_SECURITY_LEVEL_HIGH,
+		StaticProvisioning: false,
+	}
+	return &pg
+}
+
+// ProvisioningGroup instance of group.ProvisioningGroup
 type ProvisioningGroup struct {
 	Linkable
 
-	GroupOnSystem      *GroupOnSystem                  `json:"groupOnSystem,omitempty"`
-	Group              *GroupPrimer                    `json:"group"`
-	SecurityLevel      *ProvisioningGroupSecurityLevel `json:"securityLevel"`
-	StaticProvisioning bool                            `json:"staticProvisioning"`
+	GroupOnSystem      *GroupOnSystem                 `json:"groupOnSystem,omitempty"`
+	Group              *Group                         `json:"group"`
+	SecurityLevel      ProvisioningGroupSecurityLevel `json:"securityLevel"`
+	StaticProvisioning bool                           `json:"staticProvisioning"`
 }
 
 type ProvisioningGroupSecurityLevel string
