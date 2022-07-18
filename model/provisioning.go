@@ -3,6 +3,7 @@ package model
 // Section: provisioning
 
 import (
+	"fmt"
 	"github.com/gosimple/slug"
 	"net/url"
 	"time"
@@ -99,7 +100,31 @@ func (g *GroupOnSystem) AddProvGroup(group ...ProvisioningGroup) {
 // SetType Set type of GroupOnSystem, use one of the GOS_TYPE_* constants
 func (g *GroupOnSystem) SetType(typename GroupOnSystemType) {
 	g.Type = typename
+}
 
+// SetType Set type of GroupOnSystem, use one of the GOS_TYPE_* constants
+func (g *GroupOnSystem) SetTypeString(typename string) error {
+
+	switch typename {
+	case string(GOS_TYPE_POSIX):
+		g.Type = GOS_TYPE_POSIX
+	case string(GOS_TYPE_GROUP_OF_NAMES):
+		g.Type = GOS_TYPE_GROUP_OF_NAMES
+	case string(GOS_TYPE_GROUP_OF_UNIQUE_NAMES):
+		g.Type = GOS_TYPE_GROUP_OF_UNIQUE_NAMES
+	case string(GOS_TYPE_GROUP):
+		g.Type = GOS_TYPE_GROUP
+	case string(GOS_TYPE_AZURE_ROLE):
+		g.Type = GOS_TYPE_AZURE_ROLE
+	case string(GOS_TYPE_AZURE_UNIFIED_GROUP):
+		g.Type = GOS_TYPE_AZURE_UNIFIED_GROUP
+	case string(GOS_TYPE_AZURE_SECURITY_GROUP):
+		g.Type = GOS_TYPE_AZURE_SECURITY_GROUP
+	default:
+		return fmt.Errorf("value '%s' is not valid for type", typename)
+	}
+
+	return nil
 }
 
 // SetName Set DisplayName and NameInSystem from name given, NameInSystem is slugified

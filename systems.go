@@ -104,12 +104,12 @@ func (s *SystemService) GetGroupOnSystem(system *model.ProvisionedSystem, groupI
 	idString := strconv.FormatInt(system.Self().ID, 10)
 	groupIdString := strconv.FormatInt(groupId, 10)
 
-	params := &model.GroupQueryParams{
-		Additional: &model.GroupAdditionalQueryParams{Admins: false},
+	params := &model.GroupOnSystemQueryParams{
+		Additional: &model.GroupOnSystemAdditionalQueryParams{Audit: false, ProvGroups: true},
 	}
 	_, err = s.sling.New().Get(idString+"/group/"+groupIdString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Group %q. Error: %s", idString, errorReport.Message)
+		err = fmt.Errorf("Could not get GroupOnSystem \"%s/%s\". Error: %s", idString, groupIdString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
