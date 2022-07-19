@@ -97,15 +97,19 @@ func (s *SystemService) CreateGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 	return
 }
 
-func (s *SystemService) GetGroupOnSystem(system *model.ProvisionedSystem, groupId int64) (result *model.GroupOnSystem, err error) {
+func (s *SystemService) GetGroupOnSystem(system *model.ProvisionedSystem, groupId int64, additional *model.GroupOnSystemAdditionalQueryParams) (result *model.GroupOnSystem, err error) {
 
 	al := new(model.GroupOnSystem)
 	errorReport := new(model.ErrorReport)
 	idString := strconv.FormatInt(system.Self().ID, 10)
 	groupIdString := strconv.FormatInt(groupId, 10)
 
+	if additional == nil {
+		additional = &model.GroupOnSystemAdditionalQueryParams{Audit: false, ProvGroups: true}
+	}
+
 	params := &model.GroupOnSystemQueryParams{
-		Additional: &model.GroupOnSystemAdditionalQueryParams{Audit: false, ProvGroups: true},
+		Additional: additional,
 	}
 	_, err = s.sling.New().Get(idString+"/group/"+groupIdString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
