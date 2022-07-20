@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	CLIENT_TYPE_OAUTH2 clientApplicationType = "OAUTH2"
-	CLIENT_TYPE_SAML2  clientApplicationType = "SAML2"
-	CLIENT_TYPE_LDAP   clientApplicationType = "LDAP"
+	CLIENT_TYPE_OAUTH2 ClientApplicationType = "OAUTH2"
+	CLIENT_TYPE_SAML2  ClientApplicationType = "SAML2"
+	CLIENT_TYPE_LDAP   ClientApplicationType = "LDAP"
 
 	CLIENT_SCOPE_PROFILE        = "profile"
 	CLIENT_SCOPE_MANAGE_ACCOUNT = "manage_account"
@@ -23,18 +23,18 @@ const (
 	CLIENT_SUBJECT_FORMAT_USERNAME = "USERNAME"
 	CLIENT_SUBJECT_FORMAT_EMAIL    = "EMAIL"
 
-	CLIENT_PERM_ACCOUNTS_QUERY                        oauth2ClientPermissionValue = "ACCOUNTS_QUERY"
-	CLIENT_PERM_ACCOUNTS_REMOVE                       oauth2ClientPermissionValue = "ACCOUNTS_REMOVE"
-	CLIENT_PERM_GROUPONSYSTEM_CREATE                  oauth2ClientPermissionValue = "GROUPONSYSTEM_CREATE"
-	CLIENT_PERM_GROUPS_CREATE                         oauth2ClientPermissionValue = "GROUPS_CREATE"
-	CLIENT_PERM_GROUPS_VAULT_ACCESS_AFTER_CREATE      oauth2ClientPermissionValue = "GROUPS_VAULT_ACCESS_AFTER_CREATE"
-	CLIENT_PERM_GROUPS_GRANT_PERMISSIONS_AFTER_CREATE oauth2ClientPermissionValue = "GROUPS_GRANT_PERMISSIONS_AFTER_CREATE"
-	CLIENT_PERM_GROUPS_QUERY                          oauth2ClientPermissionValue = "GROUPS_QUERY"
-	CLIENT_PERM_GROUP_FULL_VAULT_ACCESS               oauth2ClientPermissionValue = "GROUP_FULL_VAULT_ACCESS"
-	CLIENT_PERM_GROUP_READ_CONTENTS                   oauth2ClientPermissionValue = "GROUP_READ_CONTENTS"
-	CLIENT_PERM_GROUP_SET_AUTHORIZATION               oauth2ClientPermissionValue = "GROUP_SET_AUTHORIZATION"
-	CLIENT_PERM_CLIENTS_CREATE                        oauth2ClientPermissionValue = "CLIENTS_CREATE"
-	CLIENT_PERM_CLIENTS_QUERY                         oauth2ClientPermissionValue = "CLIENTS_QUERY"
+	CLIENT_PERM_ACCOUNTS_QUERY                        Oauth2ClientPermissionValue = "ACCOUNTS_QUERY"
+	CLIENT_PERM_ACCOUNTS_REMOVE                       Oauth2ClientPermissionValue = "ACCOUNTS_REMOVE"
+	CLIENT_PERM_GROUPONSYSTEM_CREATE                  Oauth2ClientPermissionValue = "GROUPONSYSTEM_CREATE"
+	CLIENT_PERM_GROUPS_CREATE                         Oauth2ClientPermissionValue = "GROUPS_CREATE"
+	CLIENT_PERM_GROUPS_VAULT_ACCESS_AFTER_CREATE      Oauth2ClientPermissionValue = "GROUPS_VAULT_ACCESS_AFTER_CREATE"
+	CLIENT_PERM_GROUPS_GRANT_PERMISSIONS_AFTER_CREATE Oauth2ClientPermissionValue = "GROUPS_GRANT_PERMISSIONS_AFTER_CREATE"
+	CLIENT_PERM_GROUPS_QUERY                          Oauth2ClientPermissionValue = "GROUPS_QUERY"
+	CLIENT_PERM_GROUP_FULL_VAULT_ACCESS               Oauth2ClientPermissionValue = "GROUP_FULL_VAULT_ACCESS"
+	CLIENT_PERM_GROUP_READ_CONTENTS                   Oauth2ClientPermissionValue = "GROUP_READ_CONTENTS"
+	CLIENT_PERM_GROUP_SET_AUTHORIZATION               Oauth2ClientPermissionValue = "GROUP_SET_AUTHORIZATION"
+	CLIENT_PERM_CLIENTS_CREATE                        Oauth2ClientPermissionValue = "CLIENTS_CREATE"
+	CLIENT_PERM_CLIENTS_QUERY                         Oauth2ClientPermissionValue = "CLIENTS_QUERY"
 )
 
 func NewOAuth2ClientApplication(name string, managerGroup *Group) *ClientApplication {
@@ -49,7 +49,7 @@ func NewSaml2ClientApplication(name string, managerGroup *Group) *ClientApplicat
 	return NewClientApplication(name, managerGroup, CLIENT_TYPE_SAML2)
 }
 
-func NewClientApplication(name string, managerGroup *Group, clienttype clientApplicationType) *ClientApplication {
+func NewClientApplication(name string, managerGroup *Group, clienttype ClientApplicationType) *ClientApplication {
 
 	cl := &ClientApplication{}
 	cl.Name = name
@@ -78,8 +78,8 @@ func NewClientApplication(name string, managerGroup *Group, clienttype clientApp
 }
 
 /** Enums **/
-type clientApplicationType string
-type oauth2ClientPermissionValue string
+type ClientApplicationType string
+type Oauth2ClientPermissionValue string
 
 type oauth2 struct {
 	Confidential         bool   `json:"confidential,omitempty"`         // Oauth
@@ -109,7 +109,7 @@ type ClientApplicationPrimer struct {
 
 	UUID string                `json:"uuid,omitempty"`
 	Name string                `json:"name"`
-	Type clientApplicationType `json:"type,omitempty"`
+	Type ClientApplicationType `json:"type,omitempty"`
 
 	// Shared
 	ClientId       string   `json:"clientId,omitempty"`       // OAuth: the clientId, Saml: The ClientApplication identifier
@@ -244,7 +244,7 @@ func (c *ClientApplication) AddScope(scope string) error {
 	default:
 		return fmt.Errorf("'%s' is not a valid scope", scope)
 	}
-	
+
 	for _, existingScope := range c.Scopes {
 		if scope == existingScope {
 			// Scope all ready is enabled
@@ -297,12 +297,12 @@ type OAuth2ClientPermissionList struct {
 
 type OAuth2ClientPermission struct {
 	DType     string                      `json:"$type,omitempty"`
-	Value     oauth2ClientPermissionValue `json:"value,omitempty"`
+	Value     Oauth2ClientPermissionValue `json:"value,omitempty"`
 	ForSystem *ClientApplication          `json:"forSystem,omitempty"`
 	ForGroup  *Group                      `json:"forGroup,omitempty"`
 }
 
-func NewOAuth2ClientPermission(perm oauth2ClientPermissionValue, group *Group) *OAuth2ClientPermission {
+func NewOAuth2ClientPermission(perm Oauth2ClientPermissionValue, group *Group) *OAuth2ClientPermission {
 
 	cp := &OAuth2ClientPermission{}
 	cp.DType = "client.OAuth2ClientPermission"

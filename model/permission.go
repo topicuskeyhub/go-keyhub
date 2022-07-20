@@ -23,11 +23,11 @@ type ClientPermissionsWithClient struct {
 
 type ClientPermissionWithClient struct {
 	DType  string                      `json:"$type,omitempty"`
-	Value  oauth2ClientPermissionValue `json:"value,omitempty"`
+	Value  Oauth2ClientPermissionValue `json:"value,omitempty"`
 	Client *ClientApplication          `json:"client,omitempty"`
 }
 
-func NewClientPermissionWithClient(perm oauth2ClientPermissionValue, client *ClientApplication) *ClientPermissionWithClient {
+func NewClientPermissionWithClient(perm Oauth2ClientPermissionValue, client *ClientApplication) *ClientPermissionWithClient {
 
 	cp := &ClientPermissionWithClient{}
 	cp.DType = "client.OAuth2ClientPermissionWithClient"

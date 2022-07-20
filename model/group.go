@@ -110,7 +110,7 @@ func (g *Group) addGroupAccount(account *Account, groupRight string) {
 
 }
 
-func (g *Group) GrantClientPermission(client *ClientApplication, permission ...oauth2ClientPermissionValue) {
+func (g *Group) GrantClientPermission(client *ClientApplication, permission ...Oauth2ClientPermissionValue) {
 
 	// Check if additionalObjects is set
 	if g.AdditionalObjects == nil {
