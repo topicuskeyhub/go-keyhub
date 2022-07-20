@@ -244,6 +244,14 @@ func (c *ClientApplication) AddScope(scope string) error {
 	default:
 		return fmt.Errorf("'%s' is not a valid scope", scope)
 	}
+	
+	for _, existingScope := range c.Scopes {
+		if scope == existingScope {
+			// Scope all ready is enabled
+			return nil
+		}
+	}
+
 	c.Scopes = append(c.Scopes, scope)
 	return nil
 }
