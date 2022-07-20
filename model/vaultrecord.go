@@ -105,7 +105,7 @@ type VaultRecordQueryParams struct {
 
 type VaultRecordAdditionalQueryParams struct {
 	Audit  bool `url:"audit"`
-	Secret bool `url:"provgroups"`
+	Secret bool `url:"secret"`
 }
 
 func (p VaultRecordAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
