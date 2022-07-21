@@ -35,14 +35,11 @@ type ProvisionedSystemType string
 
 // NewGroupOnSystemList Initialize a new GroupOnSystemList
 func NewGroupOnSystemList() *GroupOnSystemList {
-	return &GroupOnSystemList{
-		DType: "LinkableWrapper",
-	}
+	return &GroupOnSystemList{}
 }
 
 // GroupOnSystemList List of GroupOnSystems
 type GroupOnSystemList struct {
-	DType string          `json:"$type,omitempty"`
 	Items []GroupOnSystem `json:"items"`
 }
 
