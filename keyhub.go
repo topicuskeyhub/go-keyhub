@@ -41,8 +41,9 @@ type Client struct {
 	ID                 string
 	Version            *VersionService
 	Accounts           *AccountService
-	ClientApplications *ClientApplicationService
 	Groups             *GroupService
+	Systems            *SystemService
+	ClientApplications *ClientApplicationService
 	Vaults             *VaultService
 }
 
@@ -118,6 +119,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		Accounts:           newAccountService(oauth2Sling.New()),
 		ClientApplications: newClientApplicationService(oauth2Sling.New()),
 		Groups:             newGroupService(oauth2Sling.New()),
+		Systems:            newSystemService(oauth2Sling.New()),
 		Vaults:             newVaultService(versionedSling.New().Client(vaultClient)),
 	}, nil
 }

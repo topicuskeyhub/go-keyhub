@@ -17,6 +17,9 @@ package model
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
+	"strings"
 )
 
 const (
@@ -69,23 +72,27 @@ type Group struct {
 	VaultRecovery string `json:"vaultRecovery,omitempty"`
 }
 
+// AddManager Add Account as Manager
 func (g *Group) AddManager(account *Account) {
-
 	g.addGroupAccount(account, GROUP_RIGHT_MANAGER)
-
 }
+
+// AddMember Add Account as Member
 func (g *Group) AddMember(account *Account) {
-
 	g.addGroupAccount(account, GROUP_RIGHT_MEMBER)
-
 }
 
+// AsPrimer Return Group with only Primer data
 func (g *Group) AsPrimer() *Group {
-
 	group := &Group{}
 	group.GroupPrimer = g.GroupPrimer
 	return group
+}
 
+// ToPrimer Convert to GroupPrimer
+func (g *Group) ToPrimer() *GroupPrimer {
+	groupPrimer := g.GroupPrimer
+	return &groupPrimer
 }
 
 func (g *Group) DisableExtendedAccess() {
@@ -234,6 +241,63 @@ func NewGroupAccount(account *Account, rights string) *GroupAccount {
 }
 
 type GroupQueryParams struct {
-	UUID       string   `url:"uuid,omitempty"`
-	Additional []string `url:"additional,omitempty"`
+	UUID       string                      `url:"uuid,omitempty"`
+	Additional *GroupAdditionalQueryParams `url:"additional,omitempty"`
 }
+
+type GroupAdditionalQueryParams struct {
+	Audit  bool `url:"audit"`
+	Admins bool `url:"admins"`
+}
+
+// EncodeValues Custom url encoder to convert bools to list
+func (p GroupAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
+	return additionalQueryParamsUrlEncoder(p, key, v)
+}
+
+const (
+	PRGRP_SECURITY_LEVEL_LOW    ProvisioningGroupSecurityLevel = "LOW"
+	PRGRP_SECURITY_LEVEL_MEDIUM ProvisioningGroupSecurityLevel = "MEDIUM"
+	PRGRP_SECURITY_LEVEL_HIGH   ProvisioningGroupSecurityLevel = "HIGH"
+)
+
+// Section: Group
+func NewProvisioningGroup() *ProvisioningGroup {
+
+	pg := ProvisioningGroup{
+		Linkable: Linkable{
+			DType: "group.ProvisioningGroup",
+		},
+		SecurityLevel:      PRGRP_SECURITY_LEVEL_HIGH,
+		StaticProvisioning: false,
+	}
+	return &pg
+}
+
+// ProvisioningGroup instance of group.ProvisioningGroup
+type ProvisioningGroup struct {
+	Linkable
+
+	GroupOnSystem      *GroupOnSystem                 `json:"groupOnSystem,omitempty"`
+	Group              *Group                         `json:"group"`
+	SecurityLevel      ProvisioningGroupSecurityLevel `json:"securityLevel"`
+	StaticProvisioning bool                           `json:"staticProvisioning"`
+}
+
+func (p *ProvisioningGroup) SetSecurityLevelString(level string) error {
+
+	switch strings.ToUpper(level) {
+	case string(PRGRP_SECURITY_LEVEL_HIGH):
+		p.SecurityLevel = PRGRP_SECURITY_LEVEL_HIGH
+	case string(PRGRP_SECURITY_LEVEL_MEDIUM):
+		p.SecurityLevel = PRGRP_SECURITY_LEVEL_MEDIUM
+	case string(PRGRP_SECURITY_LEVEL_LOW):
+		p.SecurityLevel = PRGRP_SECURITY_LEVEL_LOW
+	default:
+		return fmt.Errorf("value %s is not a valid level", level)
+	}
+	return nil
+
+}
+
+type ProvisioningGroupSecurityLevel string

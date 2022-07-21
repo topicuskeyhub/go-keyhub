@@ -16,6 +16,7 @@
 package model
 
 import (
+	"net/url"
 	"time"
 )
 
@@ -85,19 +86,23 @@ func (r *VaultRecord) File() *[]byte {
 }
 
 type VaultRecordQueryParams struct {
-	UUID         string   `url:"uuid,omitempty"`
-	Name         string   `url:"name,omitempty"`
-	Filename     string   `url:"filename,omitempty"`
-	URL          string   `url:"url,omitempty"`
-	Username     string   `url:"username,omitempty"`
-	Color        string   `url:"color,omitempty"` // see below for color values
-	NameContains string   `url:"nameContains,omitempty"`
-	Additional   []string `url:"additional,omitempty"`
+	UUID         string                            `url:"uuid,omitempty"`
+	Name         string                            `url:"name,omitempty"`
+	Filename     string                            `url:"filename,omitempty"`
+	URL          string                            `url:"url,omitempty"`
+	Username     string                            `url:"username,omitempty"`
+	Color        string                            `url:"color,omitempty"` // see below for color values
+	NameContains string                            `url:"nameContains,omitempty"`
+	Additional   *VaultRecordAdditionalQueryParams `url:"additional,omitempty"`
 }
 
 type VaultRecordAdditionalQueryParams struct {
-	Audit  bool
-	Secret bool
+	Audit  bool `url:"audit"`
+	Secret bool `url:"secret"`
+}
+
+func (p VaultRecordAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
+	return additionalQueryParamsUrlEncoder(p, key, v)
 }
 
 type VaultRecordSearchQueryParams struct {
