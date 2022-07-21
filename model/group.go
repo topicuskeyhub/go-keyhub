@@ -91,8 +91,7 @@ func (g *Group) AsPrimer() *Group {
 
 // ToPrimer Convert to GroupPrimer
 func (g *Group) ToPrimer() *GroupPrimer {
-	groupPrimer := GroupPrimer{}
-	groupPrimer = g.GroupPrimer
+	groupPrimer := g.GroupPrimer
 	return &groupPrimer
 }
 
