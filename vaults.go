@@ -106,7 +106,7 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 
 func (s *VaultService) getMyClientId() (id int64, err error) {
 
-	me := new(model.Client)
+	me := new(model.ClientApplication)
 
 	errorReport := new(model.ErrorReport)
 
