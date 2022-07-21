@@ -37,15 +37,8 @@ type VaultRecord struct {
 }
 
 type VaultRecordAdditionalObjects struct {
-	Audit  *VaultRecordAuditAdditionalObject  `json:"audit,omitempty"`
+	Audit  *AuditAdditionalObject             `json:"audit,omitempty"`
 	Secret *VaultRecordSecretAdditionalObject `json:"secret,omitempty"`
-}
-
-type VaultRecordAuditAdditionalObject struct {
-	CreatedAt      time.Time `json:"createdAt"`
-	CreatedBy      string    `json:"createdBy"`
-	LastModifiedAt time.Time `json:"lastModifiedAt"`
-	LastModifiedBy string    `json:"lastModifiedBy"`
 }
 
 type VaultRecordSecretAdditionalObject struct {
