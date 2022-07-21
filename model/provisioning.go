@@ -274,10 +274,6 @@ type ProvisionedAccount struct {
 	UId int `json:"uid,omitempty"` //ReadOnly
 }
 
-// Certificate Placeholder
-type Certificate struct {
-}
-
 // GroupOnSystemQueryParams Query Parameters for Search GroupOnSystem
 type GroupOnSystemQueryParams struct {
 	Id                 []int64   `url:"id,omitempty"`
