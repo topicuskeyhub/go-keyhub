@@ -258,14 +258,14 @@ func (c *ClientApplication) AddScope(scope string) error {
 
 func (c *ClientApplication) GetSecret() (string, error) {
 
-	if c.AdditionalObjects.Secret == nil {
+	if c.AdditionalObjects == nil || c.AdditionalObjects.Secret == nil {
 		return "", fmt.Errorf("secret is not available")
 	}
 
 	return c.AdditionalObjects.Secret.GeneratedSecret, nil
 }
 func (c *ClientApplication) GetSecretOrNil() *string {
-	if c.AdditionalObjects.Secret == nil {
+	if c.AdditionalObjects == nil || c.AdditionalObjects.Secret == nil {
 		return nil
 	}
 	return &c.AdditionalObjects.Secret.GeneratedSecret
