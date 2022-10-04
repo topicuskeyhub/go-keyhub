@@ -148,15 +148,16 @@ func (s *SystemService) DeleteGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 	return
 }
 
+/*
 func (s *SystemService) Create(system *model.ProvisionedSystem) (result *model.ProvisionedSystem, err error) {
 
-	return
-}
+		return
+	}
 
-func (s *SystemService) List() (systems []model.ProvisionedSystem, err error) {
-	return
-}
-
+	func (s *SystemService) List() (systems []model.ProvisionedSystem, err error) {
+		return
+	}
+*/
 func (s *SystemService) GetByUUID(uuid uuid.UUID) (system *model.ProvisionedSystem, err error) {
 	results := new(model.ProvisionedSystemList)
 	errorReport := new(model.ErrorReport)

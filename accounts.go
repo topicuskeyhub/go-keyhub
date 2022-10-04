@@ -17,6 +17,7 @@ package keyhub
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/dghubble/sling"
@@ -38,18 +39,25 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 	results := new(model.AccountList)
 	errorReport := new(model.ErrorReport)
 
-	_, err = s.sling.New().Get("").Receive(results, errorReport)
-	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Accounts. Error: %s", errorReport.Message)
-	}
-	if err == nil {
-		if len(results.Items) > 0 {
-			accounts = results.Items
-		} else {
-			accounts = []model.Account{}
-		}
-	}
+	searchRange := model.NewRange()
 
+	var response *http.Response
+
+	for ok := true; ok; ok = searchRange.NextPage() {
+
+		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		searchRange.ParseResponse(response)
+
+		if errorReport.Code > 0 {
+			err = fmt.Errorf("Could not fetch accounts, error: %s", errorReport.Message)
+		}
+		if err == nil {
+			if len(results.Items) > 0 {
+				accounts = append(accounts, results.Items...)
+			}
+		}
+
+	}
 	return
 }
 

@@ -17,6 +17,7 @@ package keyhub
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/dghubble/sling"
@@ -78,17 +79,25 @@ func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAcc
 func (s *GroupService) List() (groups []model.Group, err error) {
 	results := new(model.GroupList)
 	errorReport := new(model.ErrorReport)
+	groups = []model.Group{}
+	searchRange := model.NewRange()
 
-	_, err = s.sling.New().Get("").Receive(results, errorReport)
-	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Groups. Error: %s", errorReport.Message)
-	}
-	if err == nil {
-		if len(results.Items) > 0 {
-			groups = results.Items
-		} else {
-			groups = []model.Group{}
+	var response *http.Response
+
+	for ok := true; ok; ok = searchRange.NextPage() {
+
+		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		searchRange.ParseResponse(response)
+
+		if errorReport.Code > 0 {
+			err = fmt.Errorf("Could not get Groups. Error: %s", errorReport.Message)
 		}
+		if err == nil {
+			if len(results.Items) > 0 {
+				groups = append(groups, results.Items...)
+			}
+		}
+
 	}
 
 	return
