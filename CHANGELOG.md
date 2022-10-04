@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2022-10-04
+### Fixed
+- Issue #15 : List functions are no longer limited to 100 results
+
 ## [1.2.1] - 2022-09-12
 ### Fixed
 - Possible null pointer error in ClientApplication::GetSecret*
