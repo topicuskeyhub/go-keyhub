@@ -38,16 +38,18 @@ func (s *VersionService) Get() (v *model.VersionInfo, err error) {
 	errorReport := new(model.ErrorReport)
 
 	resp, err := s.sling.New().Get("").Receive(results, errorReport)
+	if err != nil {
+		return
+	}
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not get acceptable contract versions. Error: %s", errorReport.Message)
+		return
 	}
 	if resp.StatusCode >= 300 {
 		err = fmt.Errorf("Could not fetch acceptable contract versions. Error: %s", resp.Status)
+		return
 	}
-	if err == nil {
-		results.KeyhubVersion = strings.TrimPrefix(results.KeyhubVersion, "keyhub-")
-	}
+	results.KeyhubVersion = strings.TrimPrefix(results.KeyhubVersion, "keyhub-")
 
-	v = results
-	return
+	return results, nil
 }
