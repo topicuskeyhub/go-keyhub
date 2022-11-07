@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
+- Fixed potential incorrect data when listing more than 100 records (reference overwrite)
 - Fixed potential `nil pointer dereference` in versionService
 
 ## [1.2.2] - 2022-10-04
