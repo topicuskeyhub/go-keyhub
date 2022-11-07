@@ -60,15 +60,14 @@ func (s *ClientApplicationService) Create(client *model.ClientApplication) (resu
 
 // List all available clients.
 func (s *ClientApplicationService) List() (clients []model.ClientApplication, err error) {
-	results := new(model.ClientList)
-	errorReport := new(model.ErrorReport)
-
 	searchRange := model.NewRange()
 
 	var response *http.Response
 
 	for ok := true; ok; ok = searchRange.NextPage() {
 
+		errorReport := new(model.ErrorReport)
+		results := new(model.ClientList)
 		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 

@@ -36,9 +36,7 @@ func newSystemService(sling *sling.Sling) *SystemService {
 
 func (s *SystemService) FindGroupOnSystem(system *model.ProvisionedSystem, query *model.GroupOnSystemQueryParams) (results *model.GroupOnSystemList, err error) {
 
-	errorReport := new(model.ErrorReport)
 	results = &model.GroupOnSystemList{}
-	pageList := &model.GroupOnSystemList{}
 
 	selfUrl, _ := url.Parse(system.Self().Href)
 
@@ -53,6 +51,8 @@ func (s *SystemService) FindGroupOnSystem(system *model.ProvisionedSystem, query
 
 	for ok := true; ok; ok = searchRange.NextPage() {
 
+		errorReport := new(model.ErrorReport)
+		pageList := new(model.GroupOnSystemList)
 		response, _ := s.sling.New().Path(selfUrl.Path+"/").Get("group").QueryStruct(query).
 			Add(searchRange.GetRequestRangeHeader()).
 			Add(searchRange.GetRequestModeHeader()).

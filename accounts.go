@@ -36,8 +36,6 @@ func newAccountService(sling *sling.Sling) *AccountService {
 }
 
 func (s *AccountService) List() (accounts []model.Account, err error) {
-	results := new(model.AccountList)
-	errorReport := new(model.ErrorReport)
 
 	searchRange := model.NewRange()
 
@@ -45,6 +43,8 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 
 	for ok := true; ok; ok = searchRange.NextPage() {
 
+		errorReport := new(model.ErrorReport)
+		results := new(model.AccountList)
 		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 

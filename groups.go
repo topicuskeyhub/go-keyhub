@@ -77,8 +77,6 @@ func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAcc
 }
 
 func (s *GroupService) List() (groups []model.Group, err error) {
-	results := new(model.GroupList)
-	errorReport := new(model.ErrorReport)
 	groups = []model.Group{}
 	searchRange := model.NewRange()
 
@@ -86,6 +84,8 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 
 	for ok := true; ok; ok = searchRange.NextPage() {
 
+		errorReport := new(model.ErrorReport)
+		results := new(model.GroupList)
 		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 

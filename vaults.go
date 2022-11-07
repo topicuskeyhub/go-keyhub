@@ -70,8 +70,6 @@ func (s *VaultService) GetRecords(g *model.Group) (result []model.VaultRecord, e
 
 // List Retrieve all vault records for a group (secrets are not included, default audit = true)
 func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryParams, additional *model.VaultRecordAdditionalQueryParams) (records []model.VaultRecord, err error) {
-	results := new(model.VaultRecordList)
-	errorReport := new(model.ErrorReport)
 
 	selfUrl, _ := url.Parse(group.Self().Href)
 
@@ -87,6 +85,8 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 	searchRange := model.NewRange()
 	for ok := true; ok; ok = searchRange.NextPage() {
 
+		errorReport := new(model.ErrorReport)
+		results := new(model.VaultRecordList)
 		response, err := s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
