@@ -16,7 +16,9 @@
 package model
 
 import (
+	"encoding/json"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -140,3 +142,37 @@ var VaultRecordColorGreen = "GREEN"
 var VaultRecordColorRed = "RED"
 var VaultRecordColorBlue = "BLUE"
 var VaultRecordColorDark = "DARK"
+
+type MoveVaultRecordAction string
+
+const (
+	VAULTRECORD_ACTION_SHARE = MoveVaultRecordAction("SHARE")
+	VAULTRECORD_ACTION_COPY  = MoveVaultRecordAction("COPY")
+	VAULTRECORD_ACTION_MOVE  = MoveVaultRecordAction("MOVE")
+)
+
+type MoveVaultRecord struct {
+	Group         *Group                `json:"group,omitempty"`
+	Account       *Account              `json:"account,omitempty"`
+	Action        MoveVaultRecordAction `json:"action"`
+	ShareDuration time.Duration         `json:"shareDuration,omitempty"`
+}
+
+func (m MoveVaultRecord) MarshalJSON() ([]byte, error) {
+
+	duration := ""
+	if m.ShareDuration.Seconds() > 0 {
+		duration = strconv.Itoa(int(m.ShareDuration.Seconds()))
+	}
+
+	type Alias MoveVaultRecord
+	aux := &struct {
+		ShareDuration string `json:"shareDuration,omitempty"`
+		*Alias
+	}{
+		ShareDuration: duration,
+		Alias:         (*Alias)(&m),
+	}
+
+	return json.Marshal(aux)
+}

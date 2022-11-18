@@ -24,6 +24,8 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type VaultService struct {
@@ -323,6 +325,69 @@ func (s *VaultService) DeleteByID(group *model.Group, id int64) (err error) {
 	_, err = s.sling.New().Path(selfUrl.Path+"/vault/record/").Delete(idString).Receive(nil, errorReport)
 	if errorReport.Code > 0 {
 		err = fmt.Errorf("Could not delete VaultRecord %q of Group %q. Error: %s", idString, group.UUID, errorReport.Message)
+	}
+
+	return
+}
+
+// ShareWithGroup share a vault record with a group
+func (s *VaultService) ShareWithGroup(record *model.VaultRecord, group *model.Group, duration *time.Duration) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_SHARE, record, group, nil, duration)
+}
+
+// CopyToGroup  copy a vault record to a group
+func (s *VaultService) CopyToGroup(record *model.VaultRecord, group *model.Group) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_COPY, record, group, nil, nil)
+}
+
+// MoveToGroup  move a vault record to a group
+func (s *VaultService) MoveToGroup(record *model.VaultRecord, group *model.Group) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_MOVE, record, group, nil, nil)
+}
+
+// ShareWithAccount share a vault record with an account
+func (s *VaultService) ShareWithAccount(record *model.VaultRecord, account *model.Account, duration *time.Duration) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_SHARE, record, nil, account, duration)
+}
+
+// CopyToAccount  copy a vault record to an account
+func (s *VaultService) CopyToAccount(record *model.VaultRecord, account *model.Account) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_COPY, record, nil, account, nil)
+}
+
+// MoveToAccount  move a vault record to an account
+func (s *VaultService) MoveToAccount(record *model.VaultRecord, account *model.Account) (err error) {
+	return s.CallMove(model.VAULTRECORD_ACTION_MOVE, record, nil, account, nil)
+}
+
+// CallMove  do the call
+func (s *VaultService) CallMove(action model.MoveVaultRecordAction, record *model.VaultRecord, group *model.Group, account *model.Account, duration *time.Duration) (err error) {
+	errorReport := new(model.ErrorReport)
+	selfUrl, _ := url.Parse(record.Self().Href)
+
+	if group != nil && account != nil {
+		return fmt.Errorf("only one of group and account can be set at the same time")
+	}
+
+	moveVaultRecord := model.MoveVaultRecord{}
+	moveVaultRecord.Action = action
+
+	if group != nil {
+		moveVaultRecord.Group = group.AsPrimer()
+	}
+	if account != nil {
+		moveVaultRecord.Account = account
+	}
+	if duration != nil {
+		moveVaultRecord.ShareDuration = *duration
+	}
+
+	_, err = s.sling.New().Path(selfUrl.Path+"/").Post("move").BodyJSON(moveVaultRecord).Receive(nil, errorReport)
+	if errorReport.Code > 0 {
+		return fmt.Errorf("Could not %s VaultRecord %q . Error: %s", strings.ToLower(string(moveVaultRecord.Action)), record.UUID, errorReport.Message)
+	}
+	if err != nil {
+		return err
 	}
 
 	return
