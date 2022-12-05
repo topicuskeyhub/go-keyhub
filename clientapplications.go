@@ -45,7 +45,7 @@ func (s *ClientApplicationService) Create(client *model.ClientApplication) (resu
 
 	_, err = s.sling.New().Post("").BodyJSON(clients).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create ClientApplication. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not create ClientApplication.")
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -72,7 +72,7 @@ func (s *ClientApplicationService) List() (clients []model.ClientApplication, er
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("Could not get ClientApplications. Error: %s", errorReport.Message)
+			err = errorReport.Wrap("Could not get ClientApplications.")
 		}
 		if err == nil {
 			if len(results.Items) > 0 {
@@ -94,7 +94,7 @@ func (s *ClientApplicationService) GetByUUID(uuid uuid.UUID) (result *model.Clie
 	params.Additional = []string{"secret", "audit"}
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get ClientApplication %q. Error: %s", uuid, errorReport.Message)
+		err = errorReport.Wrap("Could not get ClientApplication %q.", uuid)
 	}
 	if err == nil {
 		if len(al.Items) > 0 {
@@ -115,7 +115,7 @@ func (s *ClientApplicationService) GetById(id int64) (result *model.ClientApplic
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get ClientApplication %q. Error: %s", idString, errorReport.Message)
+		err = errorReport.Wrap("Could not get ClientApplication %q.", idString)
 		return
 	}
 	if err == nil && al == nil {

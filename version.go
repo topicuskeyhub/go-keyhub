@@ -42,8 +42,7 @@ func (s *VersionService) Get() (v *model.VersionInfo, err error) {
 		return
 	}
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get acceptable contract versions. Error: %s", errorReport.Message)
-		return
+		return nil, errorReport.Wrap("Could not fetch acceptable contract versions")
 	}
 	if resp.StatusCode >= 300 {
 		err = fmt.Errorf("Could not fetch acceptable contract versions. Error: %s", resp.Status)

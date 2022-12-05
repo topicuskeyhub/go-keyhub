@@ -61,7 +61,7 @@ func (s *SystemService) FindGroupOnSystem(system *model.ProvisionedSystem, query
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("could not get GroupsOnSystem for System %s. Error: %s", system.UUID, errorReport.Message)
+			err = errorReport.Wrap("could not get GroupsOnSystem for System %s.", system.UUID)
 			return nil, err
 		}
 
@@ -85,7 +85,7 @@ func (s *SystemService) CreateGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 
 	_, err = s.sling.New().Post(groupId+"/group").BodyJSON(list).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create GroupOnSystem. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not create GroupOnSystem.")
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -113,7 +113,7 @@ func (s *SystemService) GetGroupOnSystem(system *model.ProvisionedSystem, groupI
 	}
 	_, err = s.sling.New().Get(idString+"/group/"+groupIdString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get GroupOnSystem \"%s/%s\". Error: %s", idString, groupIdString, errorReport.Message)
+		err = errorReport.Wrap("Could not get GroupOnSystem \"%s/%s\".", idString, groupIdString)
 		return
 	}
 	if err == nil && al == nil {
@@ -143,7 +143,7 @@ func (s *SystemService) DeleteGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 
 	_, err = s.sling.New().Delete(groupId+"/group/"+gosId).QueryStruct(params).Receive(result, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("could not delete GroupOnSystem. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("could not delete GroupOnSystem.")
 	}
 	return
 }
@@ -170,7 +170,7 @@ func (s *SystemService) GetByUUID(uuid uuid.UUID) (system *model.ProvisionedSyst
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
 
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get System %q. Error: %s", uuid.String(), errorReport.Message)
+		err = errorReport.Wrap("Could not get System %q.", uuid.String())
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -194,7 +194,7 @@ func (s *SystemService) GetById(id int64) (system *model.ProvisionedSystem, err 
 	}
 	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Group %q. Error: %s", idString, errorReport.Message)
+		err = errorReport.Wrap("Could not get Group %q.", idString)
 		return
 	}
 	if err == nil && al == nil {

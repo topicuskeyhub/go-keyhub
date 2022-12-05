@@ -49,7 +49,7 @@ func (s *AccountService) List() (accounts []model.Account, err error) {
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("Could not fetch accounts, error: %s", errorReport.Message)
+			err = errorReport.Wrap("Could not fetch accounts,")
 		}
 		if err == nil {
 			if len(results.Items) > 0 {
@@ -69,7 +69,7 @@ func (s *AccountService) GetByUUID(uuid uuid.UUID) (result *model.Account, err e
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Account %q. Error: %s", uuid, errorReport.Message)
+		err = errorReport.Wrap("Could not get Account %q.", uuid)
 	}
 	if err == nil {
 		if len(al.Items) > 0 {
@@ -89,7 +89,7 @@ func (s *AccountService) GetById(id int64) (result *model.Account, err error) {
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Account %q. Error: %s", idString, errorReport.Message)
+		err = errorReport.Wrap("Could not get Account %q.", idString)
 		return
 	}
 	if err == nil && al == nil {
