@@ -42,3 +42,7 @@ type KeyhubApiError struct {
 func (e KeyhubApiError) Error() string {
 	return fmt.Sprintf("%s Error: %s", e.Message, e.Report.Message)
 }
+
+func (e KeyhubApiError) Unwrap() error {
+	return e.Report
+}
