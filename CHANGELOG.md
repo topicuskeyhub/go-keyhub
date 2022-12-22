@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Issue #18 : Improved error reporting by returning the ErrorReport
+### Fixed
+- Issue #20 : Fixed index-out-of-range panic while getting vaultRecord  
 
 ## [1.2.3] - 2022-11-07
 ### Fixed
