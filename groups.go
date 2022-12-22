@@ -43,7 +43,7 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 
 	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create Group. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not create Group.")
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -65,7 +65,7 @@ func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAcc
 	_, err = s.sling.New().Post(idString+"/account").BodyJSON(list).Receive(results, errorReport)
 
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create memberschip. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not create memberschip.")
 	}
 	if err == nil {
 		if len(results.Items) == 0 {
@@ -90,7 +90,7 @@ func (s *GroupService) List() (groups []model.Group, err error) {
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("Could not get Groups. Error: %s", errorReport.Message)
+			err = errorReport.Wrap("Could not get Groups.")
 		}
 		if err == nil {
 			if len(results.Items) > 0 {
@@ -115,7 +115,7 @@ func (s *GroupService) GetByUUID(uuid uuid.UUID) (result *model.Group, err error
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(results, errorReport)
 
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Group %q. Error: %s", uuid.String(), errorReport.Message)
+		err = errorReport.Wrap("Could not get Group %q.", uuid.String())
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -139,7 +139,7 @@ func (s *GroupService) GetById(id int64) (result *model.Group, err error) {
 
 	_, err = s.sling.New().Get(idString).QueryStruct(params).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get Group %q. Error: %s", idString, errorReport.Message)
+		err = errorReport.Wrap("Could not get Group %q.", idString)
 		return
 	}
 	if err == nil && al == nil {
