@@ -384,7 +384,7 @@ func (s *VaultService) CallMove(action model.MoveVaultRecordAction, record *mode
 
 	_, err = s.sling.New().Path(selfUrl.Path+"/").Post("move").BodyJSON(moveVaultRecord).Receive(nil, errorReport)
 	if errorReport.Code > 0 {
-		return fmt.Errorf("Could not %s VaultRecord %q . Error: %s", strings.ToLower(string(moveVaultRecord.Action)), record.UUID, errorReport.Message)
+		return errorReport.Wrap("Could not %s VaultRecord %q . Error: %s", strings.ToLower(string(moveVaultRecord.Action)), record.UUID)
 	}
 	if err != nil {
 		return err
