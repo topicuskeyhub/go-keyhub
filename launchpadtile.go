@@ -45,13 +45,13 @@ func (s *LaunchPadTileService) Create(tile *model.LaunchPadTile) (result *model.
 
 	_, err = s.sling.New().Post("").BodyJSON(tiles).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create LaunchPadTile. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not create LaunchPadTile.")
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
 			result = &results.Items[0]
 		} else {
-			err = fmt.Errorf("Created LaunchPadTile not found")
+			err = fmt.Errorf("created LaunchPadTile not found")
 		}
 	}
 
@@ -72,7 +72,7 @@ func (s *LaunchPadTileService) List() (tiles []model.LaunchPadTile, err error) {
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("Could not get LaunchPadTiles. Error: %s", errorReport.Message)
+			err = errorReport.Wrap("Could not get LaunchPadTiles")
 		}
 		if err == nil {
 			if len(results.Items) > 0 {
@@ -91,7 +91,7 @@ func (s *LaunchPadTileService) GetById(id int64) (result *model.LaunchPadTile, e
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get LaunchPadTile %q. Error: %s", idString, errorReport.Message)
+		err = errorReport.Wrap("Could not get LaunchPadTile %q. Error: %s", idString)
 		return
 	}
 	if err == nil && al == nil {
