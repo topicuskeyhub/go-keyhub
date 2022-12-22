@@ -51,7 +51,7 @@ func (s *VaultService) Create(group *model.Group, vaultRecord *model.VaultRecord
 
 	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Post("record").QueryStruct(params).BodyJSON(vaultRecords).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not create VaultRecord in Group %q. Error: %s", group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not create VaultRecord in Group %q.", group.UUID)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -93,7 +93,7 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
-			err = fmt.Errorf("Could not get VaultRecords of Group %q. Error: %s", group.UUID, errorReport.Message)
+			err = errorReport.Wrap("Could not get VaultRecords of Group %q.", group.UUID)
 		}
 		if err == nil {
 			if len(results.Items) > 0 {
@@ -114,7 +114,7 @@ func (s *VaultService) getMyClientId() (id int64, err error) {
 
 	_, err = s.sling.New().Get("/keyhub/rest/v1/client/me").Receive(&me, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("could not determine client details, errorReport: %s", errorReport.Message)
+		err = errorReport.Wrap("could not determine client details")
 		return
 	}
 	if err != nil {
@@ -166,7 +166,7 @@ func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, a
 	_, err = s.sling.New().Get("/keyhub/rest/v1/vaultrecord/").QueryStruct(query).Receive(results, errorReport)
 
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not find VaultRecord. Error: %s", errorReport.Message)
+		err = errorReport.Wrap("Could not find VaultRecord.")
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -226,7 +226,7 @@ func (s *VaultService) GetByUUID(group *model.Group, uuid uuid.UUID, additional 
 
 	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Receive(results, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get VaultRecord %q of Group %q. Error: %s", uuid.String(), group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not get VaultRecord %q of Group %q.", uuid.String(), group.UUID)
 	}
 	if err == nil {
 		if len(results.Items) > 0 {
@@ -255,7 +255,7 @@ func (s *VaultService) GetByID(group *model.Group, id int64, additional *model.V
 
 	_, err = s.sling.New().Path(selfUrl.Path+"/vault/record/").Get(idString).QueryStruct(query).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not get VaultRecord %q of Group %q. Error: %s", idString, group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not get VaultRecord %q of Group %q.", idString, group.UUID)
 		return
 	}
 	if err == nil && al == nil {
@@ -288,7 +288,7 @@ func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord
 
 	_, err = s.sling.New().Path(selfUrl.Path).Put("").BodyJSON(vaultRecord).QueryStruct(query).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not update VaultRecord %q of Group %q. Error: %s", vaultRecord.UUID, group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not update VaultRecord %q of Group %q.", vaultRecord.UUID, group.UUID)
 		return
 	}
 
@@ -310,7 +310,7 @@ func (s *VaultService) DeleteByUUID(group *model.Group, uuid uuid.UUID) (err err
 
 	_, err = s.sling.New().Path(selfUrl.Path).Delete("").Receive(nil, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not delete VaultRecord %q of Group %q. Error: %s", uuid.String(), group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not delete VaultRecord %q of Group %q.", uuid.String(), group.UUID)
 	}
 
 	return
@@ -324,7 +324,7 @@ func (s *VaultService) DeleteByID(group *model.Group, id int64) (err error) {
 
 	_, err = s.sling.New().Path(selfUrl.Path+"/vault/record/").Delete(idString).Receive(nil, errorReport)
 	if errorReport.Code > 0 {
-		err = fmt.Errorf("Could not delete VaultRecord %q of Group %q. Error: %s", idString, group.UUID, errorReport.Message)
+		err = errorReport.Wrap("Could not delete VaultRecord %q of Group %q.", idString, group.UUID)
 	}
 
 	return

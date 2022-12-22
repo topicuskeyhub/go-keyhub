@@ -34,15 +34,6 @@ func (l *Linkable) Self() *Link {
 	return nil
 }
 
-type ErrorReport struct {
-	Code             int      `json:"code"`
-	Reason           string   `json:"reason"`
-	Exception        string   `json:"exception,omitempty"`
-	Message          string   `json:"message"`
-	ApplicationError string   `json:"applicationError,omitempty"`
-	StackTrace       []string `json:"stacktrace,omitempty"`
-}
-
 type Link struct {
 	ID   int64  `json:"id"`
 	Rel  string `json:"rel"`
