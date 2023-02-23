@@ -60,7 +60,7 @@ func (vr *VaultRecord) MarshalJSON() ([]byte, error) {
 		EndDate string `json:"endDate,omitempty"`
 		*Alias
 	}{
-		EndDate: vr.EndDate.Format("2006-02-01"),
+		EndDate: vr.EndDate.Format("2006-01-02"),
 		Alias:   (*Alias)(vr),
 	}
 
@@ -81,7 +81,7 @@ func (vr *VaultRecord) UnmarshalJSON(data []byte) error {
 	if err = json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-	vr.EndDate, err = time.Parse("2006-02-01", aux.EndDate)
+	vr.EndDate, err = time.Parse("2006-01-02", aux.EndDate)
 	if err != nil {
 		return err
 	}
