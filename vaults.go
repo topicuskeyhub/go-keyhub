@@ -192,9 +192,15 @@ func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, a
 
 				// Build a fake group we can use for retreiving a record without another rest call .
 				fakegroup := model.NewEmptyGroup("Unknown")
-				fakegroup.Links[0].Href = matches[1]
-				fakegroup.Links[0].Rel = "self"
-				fakegroup.Links[0].ID = gid.Int64()
+
+				fakegroup.Links = append(
+					fakegroup.Links,
+					model.Link{
+						Href: matches[1],
+						Rel:  "self",
+						ID:   gid.Int64(),
+					},
+				)
 
 				return s.GetByID(fakegroup, rid.Int64(), additional)
 			} else {

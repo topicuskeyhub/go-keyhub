@@ -148,7 +148,7 @@ func NewProvisionedSystem() *ProvisionedSystem {
 type ProvisionedSystemPrimer struct {
 	Linkable
 	Active bool                  `json:"active,omitempty"`
-	UUID   string                `json:"UUID,omitempty"`
+	UUID   string                `json:"uuid,omitempty"`
 	Name   string                `json:"name,omitempty"`
 	Type   ProvisionedSystemType `json:"type,omitempty"`
 }
@@ -178,7 +178,7 @@ type ProvisionedSystem struct {
 
 	ProvisionedAbstract
 
-	AccountCount           int
+	AccountCount           int    `json:"accountCount,omitempty"`
 	UsernamePrefix         string `json:"usernamePrefix,omitempty"`
 	TechnicalAdministrator *Group `json:"technicalAdministrator,omitempty"`
 	ExternalUUID           string `json:"externalUUID,omitempty"`
