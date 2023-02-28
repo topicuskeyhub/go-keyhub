@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Issue #17 : Implement Service Accounts
+
 ## [1.2.4] - 2023-02-23
 ### Changed
 - Issue #18 : Improved error reporting by returning the ErrorReport
