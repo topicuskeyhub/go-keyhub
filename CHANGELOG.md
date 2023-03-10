@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5] - 2023-03-10
 ### Fixed
 - Hotfix: Fix undetected parse error for vault records without an enddate
 
