@@ -53,22 +53,28 @@ type VaultRecord struct {
 }
 
 // Custom marshal function to format time.Time enddate to "Y-m-d" string
-func (vr *VaultRecord) MarshalJSON() ([]byte, error) {
+func (r VaultRecord) MarshalJSON() ([]byte, error) {
 
 	type Alias VaultRecord
+
+	dateParsed := r.EndDate.Format("2006-01-02")
+	if dateParsed == "0001-01-01" {
+		dateParsed = ""
+	}
+
 	aux := &struct {
 		EndDate string `json:"endDate,omitempty"`
 		*Alias
 	}{
-		EndDate: vr.EndDate.Format("2006-01-02"),
-		Alias:   (*Alias)(vr),
+		EndDate: dateParsed,
+		Alias:   (*Alias)(&r),
 	}
 
 	return json.Marshal(aux)
 }
 
 // Custom unmarshal function to parse "Y-m-d" enddate to a time.Time field
-func (vr *VaultRecord) UnmarshalJSON(data []byte) error {
+func (r *VaultRecord) UnmarshalJSON(data []byte) error {
 
 	type Alias VaultRecord
 	var err error
@@ -76,12 +82,14 @@ func (vr *VaultRecord) UnmarshalJSON(data []byte) error {
 		EndDate string `json:"endDate"`
 		*Alias
 	}{
-		Alias: (*Alias)(vr),
+		Alias: (*Alias)(r),
 	}
 	if err = json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-	vr.EndDate, err = time.Parse("2006-01-02", aux.EndDate)
+	if aux.EndDate != "" {
+		r.EndDate, err = time.Parse("2006-01-02", aux.EndDate)
+	}
 	if err != nil {
 		return err
 	}

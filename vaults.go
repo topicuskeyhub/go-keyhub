@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/topicuskeyhub/go-keyhub/model"
 	"math/big"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -87,7 +88,8 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 
 		errorReport := new(model.ErrorReport)
 		results := new(model.VaultRecordList)
-		response, err := s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		var response *http.Response
+		response, err = s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
