@@ -16,6 +16,7 @@
 package model
 
 import (
+	"encoding/json"
 	"net/url"
 	"time"
 )
@@ -24,17 +25,76 @@ type VaultRecordList struct {
 	Items []VaultRecord `json:"items"`
 }
 
+const (
+	WARNINGPERIOD_AT_EXPIRATION RecordWarningPeriod = "AT_EXPIRATION"
+	WARNINGPERIOD_TWO_WEEKS     RecordWarningPeriod = "TWO_WEEKS"
+	WARNINGPERIOD_ONE_MONTH     RecordWarningPeriod = "ONE_MONTH"
+	WARNINGPERIOD_TWO_MONTHS    RecordWarningPeriod = "TWO_MONTHS"
+	WARNINGPERIOD_THREE_MONTHS  RecordWarningPeriod = "THREE_MONTHS"
+	WARNINGPERIOD_SIX_MONTHS    RecordWarningPeriod = "SIX_MONTHS"
+	WARNINGPERIOD_NEVER         RecordWarningPeriod = "NEVER"
+)
+
+type RecordWarningPeriod string
+
 type VaultRecord struct {
 	Linkable
 	AdditionalObjects *VaultRecordAdditionalObjects `json:"additionalObjects,omitempty"`
 
-	UUID     string   `json:"uuid,omitempty"`
-	Name     string   `json:"name"`
-	URL      string   `json:"url,omitempty"`
-	Username string   `json:"username,omitempty"`
-	Color    string   `json:"color,omitempty"` // see bottom of file for color values
-	Filename string   `json:"filename,omitempty"`
-	Types    []string `json:"types,omitempty"`
+	UUID          string              `json:"uuid,omitempty"`
+	Name          string              `json:"name"`
+	URL           string              `json:"url,omitempty"`
+	Username      string              `json:"username,omitempty"`
+	Color         string              `json:"color,omitempty"` // see bottom of file for color values
+	Filename      string              `json:"filename,omitempty"`
+	Types         []string            `json:"types,omitempty"`
+	EndDate       time.Time           `json:"endDate,omitempty" layout:"2006-01-02"` // Layout don't work for json, only url but kept as reference
+	WarningPeriod RecordWarningPeriod `json:"warningPeriod,omitempty"`
+}
+
+// Custom marshal function to format time.Time enddate to "Y-m-d" string
+func (r VaultRecord) MarshalJSON() ([]byte, error) {
+
+	type Alias VaultRecord
+
+	dateParsed := r.EndDate.Format("2006-01-02")
+	if dateParsed == "0001-01-01" {
+		dateParsed = ""
+	}
+
+	aux := &struct {
+		EndDate string `json:"endDate,omitempty"`
+		*Alias
+	}{
+		EndDate: dateParsed,
+		Alias:   (*Alias)(&r),
+	}
+
+	return json.Marshal(aux)
+}
+
+// Custom unmarshal function to parse "Y-m-d" enddate to a time.Time field
+func (r *VaultRecord) UnmarshalJSON(data []byte) error {
+
+	type Alias VaultRecord
+	var err error
+	aux := &struct {
+		EndDate string `json:"endDate"`
+		*Alias
+	}{
+		Alias: (*Alias)(r),
+	}
+	if err = json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	if aux.EndDate != "" {
+		r.EndDate, err = time.Parse("2006-01-02", aux.EndDate)
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type VaultRecordAdditionalObjects struct {

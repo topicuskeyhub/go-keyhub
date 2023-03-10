@@ -18,20 +18,20 @@ func (er ErrorReport) Error() string {
 
 // Wrap  rap the errorReport within an error of type KeyhubApiError
 func (er ErrorReport) Wrap(format string, any ...any) error {
-	return &KeyhubApiError{
+	return KeyhubApiError{
 		Message: fmt.Sprintf(format, any...),
-		Report:  ErrorReport{},
+		Report:  er,
 	}
 }
 
 // NewKeyhubApiError Create new KeyhubApiError from ErrorReport
-func NewKeyhubApiError(errorReport ErrorReport, format string, any ...any) *KeyhubApiError {
+func NewKeyhubApiError(errorReport ErrorReport, format string, any ...any) KeyhubApiError {
 
 	err := KeyhubApiError{
 		Message: fmt.Sprintf(format, any...),
 		Report:  errorReport,
 	}
-	return &err
+	return err
 }
 
 type KeyhubApiError struct {

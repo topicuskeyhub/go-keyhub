@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Issue #24 : Allow creation of GroupOnSystem without provGroups
+
+## [1.2.5] - 2023-03-10
+### Fixed
+- Hotfix: Fix undetected parse error for vault records without an enddate
+
+## [1.2.4] - 2023-02-23
+### Changed
+- Issue #18 : Improved error reporting by returning the ErrorReport
+### Fixed
+- Issue #20 : Fixed index-out-of-range panic while getting vaultRecord  
+- Issue #21 : Can't set expire / end date for vault records
 
 ## [1.2.3] - 2022-11-07
 ### Fixed

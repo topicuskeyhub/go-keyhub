@@ -61,13 +61,14 @@ type GroupOnSystem struct {
 func NewProvisioningGroupList() *ProvisioningGroupList {
 	return &ProvisioningGroupList{
 		DType: "LinkableWrapper",
+		Items: make([]ProvisioningGroup, 0),
 	}
 }
 
 // ProvisioningGroupList List of ProvisioningGroup
 type ProvisioningGroupList struct {
 	DType string              `json:"$type,omitempty"`
-	Items []ProvisioningGroup `json:"items,omitempty"`
+	Items []ProvisioningGroup `json:"items"`
 }
 
 // NewGroupOnSystemAdditionalObject Initialize a new GroupOnSystemAdditionalObject
@@ -92,6 +93,11 @@ func (g *GroupOnSystem) AddProvGroup(group ...ProvisioningGroup) {
 		g.AdditionalObjects.ProvGroups.Items,
 		group...,
 	)
+}
+
+// NoProvGroups Set empty list for ProvisioningGroups
+func (g *GroupOnSystem) NoProvGroups() {
+	g.AdditionalObjects = NewGroupOnSystemAdditionalObject()
 }
 
 // SetType Set type of GroupOnSystem, use one of the GOS_TYPE_* constants
@@ -137,6 +143,14 @@ func NewGroupOnSystem() *GroupOnSystem {
 	}
 }
 
+// NewGroupOnSystemWithEmptyProvGroup Initialize a new GroupOnSystem with an empty provgroup list, disabling owner as default provgroup
+func NewGroupOnSystemWithEmptyProvGroup() *GroupOnSystem {
+	return &GroupOnSystem{
+		Linkable:          Linkable{DType: "provisioning.GroupOnSystem"},
+		AdditionalObjects: NewGroupOnSystemAdditionalObject(),
+	}
+}
+
 // NewProvisionedSystem Initialize a new ProvisionedSystem
 func NewProvisionedSystem() *ProvisionedSystem {
 	ps := &ProvisionedSystem{}
@@ -148,7 +162,7 @@ func NewProvisionedSystem() *ProvisionedSystem {
 type ProvisionedSystemPrimer struct {
 	Linkable
 	Active bool                  `json:"active,omitempty"`
-	UUID   string                `json:"UUID,omitempty"`
+	UUID   string                `json:"uuid,omitempty"`
 	Name   string                `json:"name,omitempty"`
 	Type   ProvisionedSystemType `json:"type,omitempty"`
 }
@@ -178,7 +192,7 @@ type ProvisionedSystem struct {
 
 	ProvisionedAbstract
 
-	AccountCount           int
+	AccountCount           int    `json:"accountCount,omitempty"`
 	UsernamePrefix         string `json:"usernamePrefix,omitempty"`
 	TechnicalAdministrator *Group `json:"technicalAdministrator,omitempty"`
 	ExternalUUID           string `json:"externalUUID,omitempty"`

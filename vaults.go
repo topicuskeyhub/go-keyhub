@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/topicuskeyhub/go-keyhub/model"
 	"math/big"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -87,7 +88,8 @@ func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryPar
 
 		errorReport := new(model.ErrorReport)
 		results := new(model.VaultRecordList)
-		response, err := s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		var response *http.Response
+		response, err = s.sling.New().Path(selfUrl.Path+"/vault/").Get("record").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
@@ -192,9 +194,15 @@ func (s *VaultService) findForClient(query model.VaultRecordSearchQueryParams, a
 
 				// Build a fake group we can use for retreiving a record without another rest call .
 				fakegroup := model.NewEmptyGroup("Unknown")
-				fakegroup.Links[0].Href = matches[1]
-				fakegroup.Links[0].Rel = "self"
-				fakegroup.Links[0].ID = gid.Int64()
+
+				fakegroup.Links = append(
+					fakegroup.Links,
+					model.Link{
+						Href: matches[1],
+						Rel:  "self",
+						ID:   gid.Int64(),
+					},
+				)
 
 				return s.GetByID(fakegroup, rid.Int64(), additional)
 			} else {
