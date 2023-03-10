@@ -62,13 +62,27 @@ type ServiceAccountGroup struct {
 }
 
 type ServiceAccountQueryParams struct {
-	UUID          string                               `url:"uuid,omitempty"`
-	CreatedAfter  time.Time                            `url:"createdAfter,omitempty" layout:"2006-01-02T15:04:05Z"`
-	CreatedBefore time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
-	ModifiedSince time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
-	Additional    *ServiceAccountAdditionalQueryParams `url:"additional,omitempty"`
-	Exclude       []int64                              `url:"exclude,omitempty"`
-	id            []int64                              `url:"id,omitempty"`
+	UUID                         string                               `url:"uuid,omitempty"`
+	CreatedAfter                 time.Time                            `url:"createdAfter,omitempty" layout:"2006-01-02T15:04:05Z"`
+	CreatedBefore                time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
+	ModifiedSince                time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
+	Additional                   *ServiceAccountAdditionalQueryParams `url:"additional,omitempty"`
+	Exclude                      []int64                              `url:"exclude,omitempty"`
+	Id                           []int64                              `url:"id,omitempty"`
+	CQLQuery                     string                               `url:"q,omitempty"`
+	Active                       string                               `url:"active,omitempty"`
+	GroupOnSystem                int64                                `url:"groupOnSystem,omitempty"`
+	GroupOnSystemOwners          int64                                `url:"groupOnSystemOwners,omitempty"`
+	Name                         string                               `url:"name,omitempty"`
+	NameContains                 string                               `url:"nameContains,omitempty"`
+	NameDoesNotStartWith         string                               `url:"nameDoesNotStartWith,omitempty"`
+	NameStartsWith               string                               `url:"nameStartsWith,omitempty"`
+	Password                     int64                                `url:"password,omitempty"`
+	PasswordRotation             string                               `url:"passwordRotation,omitempty"`
+	RequestedGroupOnSystemOwners int64                                `url:"requestedGroupOnSystemOwners,omitempty"`
+	System                       int64                                `url:"system,omitempty"`
+	TechnicalAdministrator       int64                                `url:"technicalAdministrator,omitempty"`
+	Username                     string                               `url:"Username,omitempty"`
 }
 
 type ServiceAccountAdditionalQueryParams struct {
