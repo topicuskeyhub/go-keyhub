@@ -61,13 +61,14 @@ type GroupOnSystem struct {
 func NewProvisioningGroupList() *ProvisioningGroupList {
 	return &ProvisioningGroupList{
 		DType: "LinkableWrapper",
+		Items: make([]ProvisioningGroup, 0),
 	}
 }
 
 // ProvisioningGroupList List of ProvisioningGroup
 type ProvisioningGroupList struct {
 	DType string              `json:"$type,omitempty"`
-	Items []ProvisioningGroup `json:"items,omitempty"`
+	Items []ProvisioningGroup `json:"items"`
 }
 
 // NewGroupOnSystemAdditionalObject Initialize a new GroupOnSystemAdditionalObject
@@ -92,6 +93,11 @@ func (g *GroupOnSystem) AddProvGroup(group ...ProvisioningGroup) {
 		g.AdditionalObjects.ProvGroups.Items,
 		group...,
 	)
+}
+
+// NoProvGroups Set empty list for ProvisioningGroups
+func (g *GroupOnSystem) NoProvGroups() {
+	g.AdditionalObjects = NewGroupOnSystemAdditionalObject()
 }
 
 // SetType Set type of GroupOnSystem, use one of the GOS_TYPE_* constants
@@ -134,6 +140,14 @@ func (g *GroupOnSystem) SetName(name string) {
 func NewGroupOnSystem() *GroupOnSystem {
 	return &GroupOnSystem{
 		Linkable: Linkable{DType: "provisioning.GroupOnSystem"},
+	}
+}
+
+// NewGroupOnSystemWithEmptyProvGroup Initialize a new GroupOnSystem with an empty provgroup list, disabling owner as default provgroup
+func NewGroupOnSystemWithEmptyProvGroup() *GroupOnSystem {
+	return &GroupOnSystem{
+		Linkable:          Linkable{DType: "provisioning.GroupOnSystem"},
+		AdditionalObjects: NewGroupOnSystemAdditionalObject(),
 	}
 }
 
