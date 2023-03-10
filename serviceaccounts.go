@@ -41,7 +41,7 @@ func (s *ServiceAccountService) GetByUUID(uuid uuid.UUID) (result *model.Service
 	list := new(model.ServiceAccountList)
 	errorReport := new(model.ErrorReport)
 
-	params := &model.AccountQueryParams{UUID: uuid.String()}
+	params := &model.ServiceAccountQueryParams{UUID: uuid.String()}
 
 	_, err = s.sling.New().Get("").QueryStruct(params).Receive(list, errorReport)
 	if errorReport.Code > 0 {
@@ -79,9 +79,19 @@ func (s *ServiceAccountService) GetById(id int64) (result *model.ServiceAccount,
 	return
 }
 
+//// List Retrieve all vault records for a group (secrets are not included, default audit = true)
+//func (s *VaultService) List(group *model.Group, query *model.VaultRecordQueryParams, additional *model.VaultRecordAdditionalQueryParams) (records []model.VaultRecord, err error) {
+
 // List all Service Accounts
-func (s *ServiceAccountService) List() (list []model.ServiceAccount, err error) {
+func (s *ServiceAccountService) List(query *model.ServiceAccountQueryParams, additional *model.ServiceAccountAdditionalQueryParams) (list []model.ServiceAccount, err error) {
 	list = []model.ServiceAccount{}
+
+	if query == nil {
+		query = new(model.ServiceAccountQueryParams)
+	}
+	if additional != nil {
+		query.Additional = additional
+	}
 
 	searchRange := model.NewRange()
 
@@ -91,7 +101,7 @@ func (s *ServiceAccountService) List() (list []model.ServiceAccount, err error) 
 
 		errorReport := new(model.ErrorReport)
 		results := new(model.ServiceAccountList)
-		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		response, err = s.sling.New().Get("").QueryStruct(query).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {

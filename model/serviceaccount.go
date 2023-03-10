@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"net/url"
+	"time"
+)
 
 const (
 	SA_PASSWORD_ROTATION_MANUAL     SAPasswordRotation = "MANUAL"
@@ -55,6 +59,27 @@ type ServiceAccountGroupList struct {
 
 type ServiceAccountGroup struct {
 	GroupOnSystem
+}
+
+type ServiceAccountQueryParams struct {
+	UUID          string                               `url:"uuid,omitempty"`
+	CreatedAfter  time.Time                            `url:"createdAfter,omitempty" layout:"2006-01-02T15:04:05Z"`
+	CreatedBefore time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
+	ModifiedSince time.Time                            `url:"createdBefore,omitempty" layout:"2006-01-02T15:04:05Z"`
+	Additional    *ServiceAccountAdditionalQueryParams `url:"additional,omitempty"`
+	Exclude       []int64                              `url:"exclude,omitempty"`
+	id            []int64                              `url:"id,omitempty"`
+}
+
+type ServiceAccountAdditionalQueryParams struct {
+	Audit   bool `url:"audit"`
+	Groups  bool `url:"groups"`
+	Secrets bool `url:"secrets"`
+}
+
+// EncodeValues Custom url encoder to convert bools to list
+func (p ServiceAccountAdditionalQueryParams) EncodeValues(key string, v *url.Values) error {
+	return additionalQueryParamsUrlEncoder(p, key, v)
 }
 
 func NewServiceAccount() *ServiceAccount {
