@@ -59,8 +59,12 @@ func (s *LaunchPadTileService) Create(tile *model.LaunchPadTile) (result *model.
 }
 
 // List all available launch pad tiles.
-func (s *LaunchPadTileService) List() (tiles []model.LaunchPadTile, err error) {
+func (s *LaunchPadTileService) List(queryParams *model.LaunchPadTileQueryParams) (tiles []model.LaunchPadTile, err error) {
 	searchRange := model.NewRange()
+
+	if queryParams == nil {
+		queryParams = new(model.LaunchPadTileQueryParams)
+	}
 
 	var response *http.Response
 
@@ -68,7 +72,7 @@ func (s *LaunchPadTileService) List() (tiles []model.LaunchPadTile, err error) {
 
 		errorReport := new(model.ErrorReport)
 		results := new(model.LaunchPadTileList)
-		response, err = s.sling.New().Get("").Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
+		response, err = s.sling.New().Get("").QueryStruct(*queryParams).Add(searchRange.GetRequestRangeHeader()).Add(searchRange.GetRequestModeHeader()).Receive(results, errorReport)
 		searchRange.ParseResponse(response)
 
 		if errorReport.Code > 0 {
@@ -100,4 +104,23 @@ func (s *LaunchPadTileService) GetById(id int64) (result *model.LaunchPadTile, e
 	}
 
 	return al, nil
+}
+
+// GetById Retrieve a launch pad tile by keyhub id
+func (s *LaunchPadTileService) DeleteById(id int64) (err error) {
+	al := new(model.LaunchPadTile)
+	errorReport := new(model.ErrorReport)
+	idString := strconv.FormatInt(id, 10)
+
+	_, err = s.sling.New().Delete(idString).Receive(al, errorReport)
+	if errorReport.Code > 0 {
+		err = errorReport.Wrap("Could not delete LaunchPadTile %q. Error: %s", idString)
+		return
+	}
+	if err == nil && al == nil {
+		err = fmt.Errorf("LaunchPadTile %q not found", idString)
+		return
+	}
+
+	return nil
 }
