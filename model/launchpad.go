@@ -159,6 +159,7 @@ type LaunchPadTileQueryParams struct {
 	Application   int64       `url:"application,omitempty"`
 	Group         int64       `url:"group,omitempty"`
 	Title         string      `url:"title,omitempty"`
+	VaultRecord   int64       `url:"vaultRecord,omitempty"`
 	VaultRecords  []int64     `url:"vaultRecord,omitempty"`
 }
 
