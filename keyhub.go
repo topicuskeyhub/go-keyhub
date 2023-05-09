@@ -31,7 +31,7 @@ import (
 
 const (
 	/* KeyHub contract version supported by this client, set to 0 for latest */
-	supportedContractVersion = 57
+	supportedContractVersion = 62
 
 	/* KeyHub json mediatype */
 	mediatype = "application/vnd.topicus.keyhub+json"

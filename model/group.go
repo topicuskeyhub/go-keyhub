@@ -17,9 +17,7 @@ package model
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/url"
-	"strings"
 )
 
 const (
@@ -255,12 +253,6 @@ func (p GroupAdditionalQueryParams) EncodeValues(key string, v *url.Values) erro
 	return additionalQueryParamsUrlEncoder(p, key, v)
 }
 
-const (
-	PRGRP_SECURITY_LEVEL_LOW    ProvisioningGroupSecurityLevel = "LOW"
-	PRGRP_SECURITY_LEVEL_MEDIUM ProvisioningGroupSecurityLevel = "MEDIUM"
-	PRGRP_SECURITY_LEVEL_HIGH   ProvisioningGroupSecurityLevel = "HIGH"
-)
-
 // Section: Group
 func NewProvisioningGroup() *ProvisioningGroup {
 
@@ -268,8 +260,7 @@ func NewProvisioningGroup() *ProvisioningGroup {
 		Linkable: Linkable{
 			DType: "group.ProvisioningGroup",
 		},
-		SecurityLevel:      PRGRP_SECURITY_LEVEL_HIGH,
-		StaticProvisioning: false,
+		ActivationRequired: true,
 	}
 	return &pg
 }
@@ -278,26 +269,7 @@ func NewProvisioningGroup() *ProvisioningGroup {
 type ProvisioningGroup struct {
 	Linkable
 
-	GroupOnSystem      *GroupOnSystem                 `json:"groupOnSystem,omitempty"`
-	Group              *Group                         `json:"group"`
-	SecurityLevel      ProvisioningGroupSecurityLevel `json:"securityLevel"`
-	StaticProvisioning bool                           `json:"staticProvisioning"`
+	GroupOnSystem      *GroupOnSystem `json:"groupOnSystem,omitempty"`
+	Group              *Group         `json:"group"`
+	ActivationRequired bool           `json:"activationRequired"`
 }
-
-func (p *ProvisioningGroup) SetSecurityLevelString(level string) error {
-
-	switch strings.ToUpper(level) {
-	case string(PRGRP_SECURITY_LEVEL_HIGH):
-		p.SecurityLevel = PRGRP_SECURITY_LEVEL_HIGH
-	case string(PRGRP_SECURITY_LEVEL_MEDIUM):
-		p.SecurityLevel = PRGRP_SECURITY_LEVEL_MEDIUM
-	case string(PRGRP_SECURITY_LEVEL_LOW):
-		p.SecurityLevel = PRGRP_SECURITY_LEVEL_LOW
-	default:
-		return fmt.Errorf("value %s is not a valid level", level)
-	}
-	return nil
-
-}
-
-type ProvisioningGroupSecurityLevel string
