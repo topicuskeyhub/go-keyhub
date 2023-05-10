@@ -84,6 +84,7 @@ func (s *SystemService) CreateGroupOnSystem(groupOnSystem *model.GroupOnSystem) 
 	list.Items = append(list.Items, *groupOnSystem)
 
 	_, err = s.sling.New().Post(groupId+"/group").BodyJSON(list).Receive(results, errorReport)
+	_, err = s.sling.New().Post(groupId+"/group").BodyProvider(khJsonBodyProvider{payload: list}).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not create GroupOnSystem.")
 	}

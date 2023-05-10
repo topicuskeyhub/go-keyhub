@@ -41,7 +41,7 @@ func (s *GroupService) Create(group *model.Group) (result *model.Group, err erro
 	errorReport := new(model.ErrorReport)
 	groups.Items = append(groups.Items, *group)
 
-	_, err = s.sling.New().Post("").BodyJSON(groups).Receive(results, errorReport)
+	_, err = s.sling.New().Post("").BodyProvider(khJsonBodyProvider{payload: groups}).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not create Group.")
 	}
@@ -62,7 +62,7 @@ func (s *GroupService) CreateMembership(group *model.Group, list *model.GroupAcc
 
 	errorReport := new(model.ErrorReport)
 
-	_, err = s.sling.New().Post(idString+"/account").BodyJSON(list).Receive(results, errorReport)
+	_, err = s.sling.New().Post(idString+"/account").BodyProvider(khJsonBodyProvider{payload: list}).Receive(results, errorReport)
 
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not create memberschip.")

@@ -43,7 +43,7 @@ func (s *ClientApplicationService) Create(client *model.ClientApplication) (resu
 	errorReport := new(model.ErrorReport)
 	clients.Items = append(clients.Items, *client)
 
-	_, err = s.sling.New().Post("").BodyJSON(clients).Receive(results, errorReport)
+	_, err = s.sling.New().Post("").BodyProvider(khJsonBodyProvider{payload: clients}).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not create ClientApplication.")
 	}
