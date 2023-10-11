@@ -16,7 +16,10 @@
 package keyhub
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -45,6 +48,25 @@ type Client struct {
 	Systems            *SystemService
 	ClientApplications *ClientApplicationService
 	Vaults             *VaultService
+}
+
+// khJsonBodyProvider encodes a JSON tagged struct value as a Body for requests.
+// See https://golang.org/pkg/encoding/json/#MarshalIndent for details.
+type khJsonBodyProvider struct {
+	payload interface{}
+}
+
+func (p khJsonBodyProvider) ContentType() string {
+	return ""
+}
+
+func (p khJsonBodyProvider) Body() (io.Reader, error) {
+	buf := &bytes.Buffer{}
+	err := json.NewEncoder(buf).Encode(p.payload)
+	if err != nil {
+		return nil, err
+	}
+	return buf, nil
 }
 
 func NewClientDefault(issuer string, clientID string, clientSecret string) (*Client, error) {
