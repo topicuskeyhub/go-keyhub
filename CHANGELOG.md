@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2023-05-09
+### Changed
+- Issue # : Build with 1.21
+- Issue #27 : Missing contract headers
+
 ## [1.3.0] - 2023-05-09
 ### Changed
 - Issue # : Require and changes for keyhub contract version 62 to fix problem with provision groups

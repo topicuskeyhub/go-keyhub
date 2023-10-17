@@ -1,6 +1,6 @@
 module github.com/topicuskeyhub/go-keyhub
 
-go 1.18
+go 1.21
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
