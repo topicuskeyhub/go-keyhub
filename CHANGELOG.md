@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Issue # : Build with 1.21
 - Issue #27 : Missing contract headers
+- Issue #17 : implement service accounts 
+- Issue #14 : create a launchpadtile
+
 
 ## [1.3.0] - 2023-05-09
 ### Changed
