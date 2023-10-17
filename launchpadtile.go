@@ -95,7 +95,7 @@ func (s *LaunchPadTileService) GetById(id int64) (result *model.LaunchPadTile, e
 
 	_, err = s.sling.New().Get(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = errorReport.Wrap("Could not get LaunchPadTile %q. Error: %s", idString)
+		err = errorReport.Wrap("Could not get LaunchPadTile %q. Error: %s", idString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
@@ -114,7 +114,7 @@ func (s *LaunchPadTileService) DeleteById(id int64) (err error) {
 
 	_, err = s.sling.New().Delete(idString).Receive(al, errorReport)
 	if errorReport.Code > 0 {
-		err = errorReport.Wrap("Could not delete LaunchPadTile %q. Error: %s", idString)
+		err = errorReport.Wrap("Could not delete LaunchPadTile %q. Error: %s", idString, errorReport.Message)
 		return
 	}
 	if err == nil && al == nil {
