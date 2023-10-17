@@ -16,9 +16,11 @@
 package keyhub
 
 import (
+	"github.com/google/go-querystring/query"
 	"net/http"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jarcoal/httpmock"
@@ -131,4 +133,58 @@ func TestGroups(t *testing.T) {
 	if group.Self().ID != 1 {
 		t.Fatalf("ERROR group with id 1 not found")
 	}
+}
+
+func verifyQueryParams(t *testing.T, queryParams interface{}, expected string) {
+
+	r, err := query.Values(queryParams)
+	if err != nil {
+		t.Fatalf("Could not parse query params")
+	}
+
+	result := r.Encode()
+
+	if result != expected {
+		t.Fatalf("Parse error, result `%s` did not match expected `%s`", result, expected)
+	}
+
+}
+
+func TestQueries(t *testing.T) {
+
+	var q model.ServiceAccountQueryParams
+
+	q = model.ServiceAccountQueryParams{}
+	verifyQueryParams(t, q, "")
+
+	CreatedAfter, _ := time.Parse("2006-01-02", "2023-01-04")
+	CreatedBefore, _ := time.Parse("2006-01-02", "2023-01-04")
+	ModifiedSince, _ := time.Parse("2006-01-02", "2023-01-04")
+
+	q = model.ServiceAccountQueryParams{
+		UUID:                         "51f0cb1d-5745-4512-8d0d-bb28e2449d3f",
+		CreatedAfter:                 CreatedAfter,
+		CreatedBefore:                CreatedBefore,
+		ModifiedSince:                ModifiedSince,
+		Additional:                   nil,
+		Exclude:                      []int64{1000},
+		Id:                           []int64{1001},
+		CQLQuery:                     "Blaat",
+		Active:                       "BOTH",
+		GroupOnSystem:                1002,
+		GroupOnSystemOwners:          1003,
+		Name:                         "Name",
+		NameContains:                 "Contains",
+		NameDoesNotStartWith:         "NotStartWith",
+		NameStartsWith:               "StartsWith",
+		Password:                     1004,
+		PasswordRotation:             "MANUAL",
+		RequestedGroupOnSystemOwners: 1005,
+		System:                       1006,
+		TechnicalAdministrator:       1007,
+		Username:                     "Username",
+	}
+
+	verifyQueryParams(t, q, "Username=Username&active=BOTH&createdAfter=2023-01-04T00%3A00%3A00Z&createdBefore=2023-01-04T00%3A00%3A00Z&createdBefore=2023-01-04T00%3A00%3A00Z&exclude=1000&groupOnSystem=1002&groupOnSystemOwners=1003&id=1001&name=Name&nameContains=Contains&nameDoesNotStartWith=NotStartWith&nameStartsWith=StartsWith&password=1004&passwordRotation=MANUAL&q=Blaat&requestedGroupOnSystemOwners=1005&system=1006&technicalAdministrator=1007&uuid=51f0cb1d-5745-4512-8d0d-bb28e2449d3f")
+
 }
