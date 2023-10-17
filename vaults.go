@@ -48,7 +48,7 @@ func (s *VaultService) Create(group *model.Group, vaultRecord *model.VaultRecord
 		Additional: &model.VaultRecordAdditionalQueryParams{Secret: true},
 	}
 
-	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Post("record").QueryStruct(params).BodyJSON(vaultRecords).Receive(results, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path+"/vault/").Post("record").QueryStruct(params).BodyProvider(khJsonBodyProvider{payload: vaultRecords}).Receive(results, errorReport)
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not create VaultRecord in Group %q.", group.UUID)
 	}
@@ -292,7 +292,7 @@ func (s *VaultService) Update(group *model.Group, vaultRecord *model.VaultRecord
 		vaultRecord.AdditionalObjects.Audit = nil
 	}
 
-	_, err = s.sling.New().Path(selfUrl.Path).Put("").BodyJSON(vaultRecord).QueryStruct(query).Receive(al, errorReport)
+	_, err = s.sling.New().Path(selfUrl.Path).Put("").BodyProvider(khJsonBodyProvider{payload: vaultRecord}).QueryStruct(query).Receive(al, errorReport)
 	if errorReport.Code > 0 {
 		err = errorReport.Wrap("Could not update VaultRecord %q of Group %q.", vaultRecord.UUID, group.UUID)
 		return
