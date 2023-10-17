@@ -48,6 +48,7 @@ type Client struct {
 	Systems            *SystemService
 	ClientApplications *ClientApplicationService
 	Vaults             *VaultService
+	LaunchPadTile      *LaunchPadTileService
 }
 
 // khJsonBodyProvider encodes a JSON tagged struct value as a Body for requests.
@@ -142,6 +143,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		ClientApplications: newClientApplicationService(oauth2Sling.New()),
 		Groups:             newGroupService(oauth2Sling.New()),
 		Systems:            newSystemService(oauth2Sling.New()),
+		LaunchPadTile:      newLaunchPadTileService(oauth2Sling.New()),
 		Vaults:             newVaultService(versionedSling.New().Client(vaultClient)),
 	}, nil
 }
