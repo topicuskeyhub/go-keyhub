@@ -25,7 +25,13 @@ import (
 
 type VersionService struct {
 	sling *sling.Sling
+	info  *model.VersionInfo
 }
+
+const (
+	/* KeyHub json mediatype */
+	mediatype = "application/vnd.topicus.keyhub+json"
+)
 
 func newVersionService(sling *sling.Sling) *VersionService {
 	return &VersionService{
@@ -51,4 +57,37 @@ func (s *VersionService) Get() (v *model.VersionInfo, err error) {
 	results.KeyhubVersion = strings.TrimPrefix(results.KeyhubVersion, "keyhub-")
 
 	return results, nil
+}
+
+func (s *VersionService) CheckAndUpdateVersionedSling(version int, base *sling.Sling) (headerVersion string, err error) {
+
+	if s.info == nil {
+		s.info, err = s.Get()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if version > 0 {
+
+		isContractVersionSupported := false
+		for _, contractVersion := range s.info.ContractVersions {
+			if version == contractVersion {
+				isContractVersionSupported = true
+				break
+			}
+		}
+		if !isContractVersionSupported {
+			return "", fmt.Errorf("KeyHub %v does not support api contract version %v", s.info.KeyhubVersion, version)
+		}
+
+		headerVersion = fmt.Sprintf("%d", version)
+	} else {
+		headerVersion = "latest"
+	}
+
+	base.Set("Accept", fmt.Sprintf("%v;version=%s", mediatype, headerVersion))
+	base.Set("Content-Type", fmt.Sprintf("%v;version=%s", mediatype, headerVersion))
+
+	return
 }

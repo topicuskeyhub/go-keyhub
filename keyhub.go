@@ -18,10 +18,8 @@ package keyhub
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/coreos/go-oidc"
@@ -30,14 +28,6 @@ import (
 	"golang.org/x/oauth2/clientcredentials"
 
 	"github.com/dghubble/sling"
-)
-
-const (
-	/* KeyHub contract version supported by this client, set to 0 for latest */
-	supportedContractVersion = 62
-
-	/* KeyHub json mediatype */
-	mediatype = "application/vnd.topicus.keyhub+json"
 )
 
 type Client struct {
@@ -83,37 +73,25 @@ func NewClientDefault(issuer string, clientID string, clientSecret string) (*Cli
 
 func NewClient(httpClient *http.Client, issuer string, clientID string, clientSecret string) (*Client, error) {
 
-	var header_version string
+	var err error
 
 	base := sling.New().Client(httpClient).Base(issuer)
 
 	versionService := newVersionService(base.New().Set("Accept", "application/json").Set("Content-Type", "application/json"))
-	version, err := versionService.Get()
+
+	// Create sling for contract version 60
+	baseVersionedSling := base.New()
+	_, err = versionService.CheckAndUpdateVersionedSling(60, baseVersionedSling)
 	if err != nil {
 		return nil, err
 	}
 
-	if supportedContractVersion > 0 {
-
-		isContractVersionSupported := false
-		for _, contractVersion := range version.ContractVersions {
-			if supportedContractVersion == contractVersion {
-				isContractVersionSupported = true
-				break
-			}
-		}
-		if !isContractVersionSupported {
-			return nil, fmt.Errorf("KeyHub %v does not support api contract version %v", version.KeyhubVersion, supportedContractVersion)
-		}
-
-		header_version = strconv.FormatInt(supportedContractVersion, 10)
-	} else {
-		header_version = "latest"
+	// Create sling for contract version 71
+	newerVersionedSling := base.New()
+	_, err = versionService.CheckAndUpdateVersionedSling(71, newerVersionedSling)
+	if err != nil {
+		return nil, err
 	}
-
-	versionedSling := base.New().
-		Set("Accept", fmt.Sprintf("%v;version=%s", mediatype, header_version)).
-		Set("Content-Type", fmt.Sprintf("%v;version=%s", mediatype, header_version))
 
 	ctx := oidc.ClientContext(context.Background(), httpClient)
 	provider, err := oidc.NewProvider(ctx, issuer)
@@ -130,7 +108,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 	oauth2Client := appClientConf.Client(ctx)
 	oauth2Client.Timeout = httpClient.Timeout
 
-	oauth2Sling := versionedSling.New().Client(oauth2Client)
+	oauth2Sling := baseVersionedSling.New().Client(oauth2Client)
 
 	vaultClient := &http.Client{
 		Transport: &Transport{
@@ -142,10 +120,10 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		Version:            versionService,
 		Accounts:           newAccountService(oauth2Sling.New()),
 		ClientApplications: newClientApplicationService(oauth2Sling.New()),
-		Groups:             newGroupService(oauth2Sling.New()),
+		Groups:             newGroupService(newerVersionedSling.New().Client(oauth2Client)),
 		Systems:            newSystemService(oauth2Sling.New()),
 		LaunchPadTile:      newLaunchPadTileService(oauth2Sling.New()),
-		Vaults:             newVaultService(versionedSling.New().Client(vaultClient)),
+		Vaults:             newVaultService(newerVersionedSling.New().Client(vaultClient)),
 		ServiceAccounts:    NewServiceAccountService(oauth2Sling),
 	}, nil
 }

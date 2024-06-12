@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2024-06-12
+### Changed
+- Issue # : Add deprecation warning to readme
+- Issue # : retract version 1.3.1 due to contract version/model mismatch
+- Issue # : Switch group and vault service to contract version 71
+- Issue # : Downgrade other services to contract version 60
+
 ## [1.3.1] - 2023-05-09
 ### Changed
 - Issue # : Build with 1.21

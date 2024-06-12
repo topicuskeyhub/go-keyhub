@@ -4,6 +4,11 @@
 
 # go-keyhub - Topicus KeyHub API Client
 
+> [!CAUTION]
+> DEPRECATED: please note that this package `github.com/topicuskeyhub/go-keyhub` has become deprecated in favor of `github.com/topicuskeyhub/sdk-go`
+> 
+> For more info see: https://github.com/topicuskeyhub/sdk-go/
+
 ### How to use
 
 See the examples directory for more complete examples.
@@ -11,7 +16,7 @@ See the examples directory for more complete examples.
 go.mod:
 ```
 require (
-  github.com/topicuskeyhub/go-keyhub v0.2.0
+  github.com/topicuskeyhub/go-keyhub v1.3.2
 )
 ```
 
