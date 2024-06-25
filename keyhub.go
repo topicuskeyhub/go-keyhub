@@ -103,7 +103,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		newClient.VersionErrors = append(newClient.VersionErrors, err)
 	}
 
-	if !(baseVersionedSupported && newerVersionedSupported) {
+	if !(baseVersionedSupported || newerVersionedSupported) {
 		return nil, fmt.Errorf("KeyHub %v does not support api contract versions 60 or 71", versionService.info.KeyhubVersion)
 	}
 

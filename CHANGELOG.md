@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.4] - 2024-06-25
+### Fixed
+- Issue # : Fix incorrect check for no supported versions
+
 ## [1.3.3] - 2024-06-25
 ### Changed
 - Issue # : Optional services based on supported version of keyhub
