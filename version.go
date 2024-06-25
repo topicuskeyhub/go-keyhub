@@ -59,26 +59,27 @@ func (s *VersionService) Get() (v *model.VersionInfo, err error) {
 	return results, nil
 }
 
-func (s *VersionService) CheckAndUpdateVersionedSling(version int, base *sling.Sling) (headerVersion string, err error) {
+func (s *VersionService) CheckAndUpdateVersionedSling(version int, base *sling.Sling) (isSupported bool, err error) {
 
+	isSupported = false
+	var headerVersion string
 	if s.info == nil {
 		s.info, err = s.Get()
 		if err != nil {
-			return "", err
+			return
 		}
 	}
 
 	if version > 0 {
 
-		isContractVersionSupported := false
 		for _, contractVersion := range s.info.ContractVersions {
 			if version == contractVersion {
-				isContractVersionSupported = true
+				isSupported = true
 				break
 			}
 		}
-		if !isContractVersionSupported {
-			return "", fmt.Errorf("KeyHub %v does not support api contract version %v", s.info.KeyhubVersion, version)
+		if !isSupported {
+			return isSupported, fmt.Errorf("KeyHub %v does not support api contract version %v", s.info.KeyhubVersion, version)
 		}
 
 		headerVersion = fmt.Sprintf("%d", version)
@@ -89,5 +90,5 @@ func (s *VersionService) CheckAndUpdateVersionedSling(version int, base *sling.S
 	base.Set("Accept", fmt.Sprintf("%v;version=%s", mediatype, headerVersion))
 	base.Set("Content-Type", fmt.Sprintf("%v;version=%s", mediatype, headerVersion))
 
-	return
+	return isSupported, nil
 }
