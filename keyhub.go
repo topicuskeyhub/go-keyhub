@@ -18,6 +18,7 @@ package keyhub
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -40,6 +41,7 @@ type Client struct {
 	Vaults             *VaultService
 	ServiceAccounts    *ServiceAccountService
 	LaunchPadTile      *LaunchPadTileService
+	VersionErrors      []error
 }
 
 // khJsonBodyProvider encodes a JSON tagged struct value as a Body for requests.
@@ -74,23 +76,35 @@ func NewClientDefault(issuer string, clientID string, clientSecret string) (*Cli
 func NewClient(httpClient *http.Client, issuer string, clientID string, clientSecret string) (*Client, error) {
 
 	var err error
+	var baseVersionedSupported bool
+	var newerVersionedSupported bool
 
 	base := sling.New().Client(httpClient).Base(issuer)
 
 	versionService := newVersionService(base.New().Set("Accept", "application/json").Set("Content-Type", "application/json"))
 
+	newClient := &Client{
+		ID:            clientID,
+		Version:       versionService,
+		VersionErrors: make([]error, 0),
+	}
+
 	// Create sling for contract version 60
 	baseVersionedSling := base.New()
-	_, err = versionService.CheckAndUpdateVersionedSling(60, baseVersionedSling)
+	baseVersionedSupported, err = versionService.CheckAndUpdateVersionedSling(60, baseVersionedSling)
 	if err != nil {
-		return nil, err
+		newClient.VersionErrors = append(newClient.VersionErrors, err)
 	}
 
 	// Create sling for contract version 71
 	newerVersionedSling := base.New()
-	_, err = versionService.CheckAndUpdateVersionedSling(71, newerVersionedSling)
+	newerVersionedSupported, err = versionService.CheckAndUpdateVersionedSling(71, newerVersionedSling)
 	if err != nil {
-		return nil, err
+		newClient.VersionErrors = append(newClient.VersionErrors, err)
+	}
+
+	if !(baseVersionedSupported && newerVersionedSupported) {
+		return nil, fmt.Errorf("KeyHub %v does not support api contract versions 60 or 71", versionService.info.KeyhubVersion)
 	}
 
 	ctx := oidc.ClientContext(context.Background(), httpClient)
@@ -115,15 +129,20 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 			Base: oauth2Client.Transport,
 		},
 	}
-	return &Client{
-		ID:                 clientID,
-		Version:            versionService,
-		Accounts:           newAccountService(oauth2Sling.New()),
-		ClientApplications: newClientApplicationService(oauth2Sling.New()),
-		Groups:             newGroupService(newerVersionedSling.New().Client(oauth2Client)),
-		Systems:            newSystemService(oauth2Sling.New()),
-		LaunchPadTile:      newLaunchPadTileService(oauth2Sling.New()),
-		Vaults:             newVaultService(newerVersionedSling.New().Client(vaultClient)),
-		ServiceAccounts:    NewServiceAccountService(oauth2Sling),
-	}, nil
+
+	if baseVersionedSupported {
+		newClient.Accounts = newAccountService(oauth2Sling.New())
+		newClient.ClientApplications = newClientApplicationService(oauth2Sling.New())
+		newClient.Systems = newSystemService(oauth2Sling.New())
+		newClient.LaunchPadTile = newLaunchPadTileService(oauth2Sling.New())
+		newClient.ServiceAccounts = NewServiceAccountService(oauth2Sling)
+	}
+
+	if newerVersionedSupported {
+		newClient.Groups = newGroupService(newerVersionedSling.New().Client(oauth2Client))
+		newClient.Vaults = newVaultService(newerVersionedSling.New().Client(vaultClient))
+	}
+
+	return newClient, nil
+
 }
