@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.3.5] - 2024-06-25
+### Changed
+- Issue # : Vaults and groups always uses latest as contract id
+
 ## [1.3.4] - 2024-06-25
 ### Fixed
 - Issue # : Fix incorrect check for no supported versions

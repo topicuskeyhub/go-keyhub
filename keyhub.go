@@ -77,7 +77,7 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 
 	var err error
 	var baseVersionedSupported bool
-	var newerVersionedSupported bool
+	var latestVersionedSupported bool
 
 	base := sling.New().Client(httpClient).Base(issuer)
 
@@ -97,14 +97,14 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 	}
 
 	// Create sling for contract version 71
-	newerVersionedSling := base.New()
-	newerVersionedSupported, err = versionService.CheckAndUpdateVersionedSling(71, newerVersionedSling)
+	latestVersionedSling := base.New()
+	latestVersionedSupported, err = versionService.CheckAndUpdateVersionedSling(0, latestVersionedSling)
 	if err != nil {
 		newClient.VersionErrors = append(newClient.VersionErrors, err)
 	}
 
-	if !(baseVersionedSupported || newerVersionedSupported) {
-		return nil, fmt.Errorf("KeyHub %v does not support api contract versions 60 or 71", versionService.info.KeyhubVersion)
+	if !(baseVersionedSupported || latestVersionedSupported) {
+		return nil, fmt.Errorf("KeyHub %v does not support api contract versions 60 or Latest", versionService.info.KeyhubVersion)
 	}
 
 	ctx := oidc.ClientContext(context.Background(), httpClient)
@@ -138,9 +138,9 @@ func NewClient(httpClient *http.Client, issuer string, clientID string, clientSe
 		newClient.ServiceAccounts = NewServiceAccountService(oauth2Sling)
 	}
 
-	if newerVersionedSupported {
-		newClient.Groups = newGroupService(newerVersionedSling.New().Client(oauth2Client))
-		newClient.Vaults = newVaultService(newerVersionedSling.New().Client(vaultClient))
+	if latestVersionedSupported {
+		newClient.Groups = newGroupService(latestVersionedSling.New().Client(oauth2Client))
+		newClient.Vaults = newVaultService(latestVersionedSling.New().Client(vaultClient))
 	}
 
 	return newClient, nil

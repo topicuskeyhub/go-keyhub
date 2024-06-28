@@ -84,6 +84,7 @@ func (s *VersionService) CheckAndUpdateVersionedSling(version int, base *sling.S
 
 		headerVersion = fmt.Sprintf("%d", version)
 	} else {
+		isSupported = true
 		headerVersion = "latest"
 	}
 
